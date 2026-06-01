@@ -6,6 +6,13 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Added
+- `SECURITY.md` (disclosure policy + security model and considerations).
+- `docs/PUBLISHING.md`; PyPI publish workflow switched to Trusted Publishing
+  (OIDC) — no stored API token.
+- More hub resources: `test-plan`, `tighten-prose`, `explain-diff`.
+- v0.2.0 plan in `ROADMAP.md`.
+
 ## [0.1.4] - 2026-06-01
 
 ### Fixed
