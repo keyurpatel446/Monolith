@@ -1,6 +1,12 @@
-# Monolith
+# 🧱 Monolith
 
-**One token-efficiency ruleset for every AI coding assistant.**
+> **One ruleset. Every agent. Fewer tokens.**
+
+[![CI](https://github.com/keyurpatel446/Monolith/actions/workflows/ci.yml/badge.svg)](https://github.com/keyurpatel446/Monolith/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](pyproject.toml)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#-development--branching)
+[![Buy me a coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-PayPal-00457C?logo=paypal&logoColor=white)](https://paypal.me/keyurpatel446)
 
 Monolith is a small, dependency-free CLI that writes proven token-saving rules
 into the native config file each AI coding agent already reads — so you author
@@ -12,28 +18,45 @@ the rules **once** and every agent obeys them:
 | OpenAI Codex | `AGENTS.md` |
 | GitHub Copilot | `.github/copilot-instructions.md` |
 
-It synthesizes the best ideas from a few popular projects into one tool:
+It also does **task management** (PRD → tracked tasks), ships a **resource hub**
+of installable agent commands, and can **`shrink`** verbose tool output at
+runtime — all from one tool.
 
-- **Filler removal** — no greetings, closers, or restatement
-  (inspired by [claude-token-efficient](https://github.com/drona23/claude-token-efficient)).
-- **Dense, low-token output** with intensity tiers `lite` / `full` / `ultra`
-  (inspired by [caveman](https://github.com/JuliusBrussee/caveman)).
-- A roadmap toward **task management** and a **resource hub**
-  (inspired by [claude-task-master](https://github.com/eyaltoledano/claude-task-master)
-  and [awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code)).
+---
 
-> Projected output reduction is **55–65%** on the `full` profile, based on the
-> upstream benchmarks Monolith builds on. These are projections, not
-> guarantees — `monolith stats` always labels them as such.
+## ⚡ Before / After
 
-## Why
+**Without Monolith** — _84 tokens_
+> Great question! I'd be happy to help you figure this out. So, the reason your
+> function is returning `None` is actually because there's no explicit return
+> statement at the end of the branch. What you'll want to do here is make sure
+> you return the computed value. I hope this helps, and let me know if you have
+> any other questions!
+
+**With Monolith** — _19 tokens (−77%)_
+> It returns `None` because that branch has no return. Return the computed value.
+
+Same answer. ~⅕ the tokens. (Measured by `monolith bench`; see [Comparison](#-how-does-it-compare-to-caveman--token-efficient).)
+
+---
+
+## 🪄 Why
 
 Each agent reads instructions from a different file, so today you'd copy-paste
 the same rules into three places and keep them in sync by hand. Monolith keeps
 one canonical source and compiles it. Re-running is safe: managed content lives
 between markers and never clobbers your own notes in the same file.
 
-## Install
+It synthesizes the best ideas from popular projects into one cross-agent tool:
+filler removal (inspired by
+[claude-token-efficient](https://github.com/drona23/claude-token-efficient)),
+dense-output tiers (inspired by
+[caveman](https://github.com/JuliusBrussee/caveman)), task management (inspired
+by [claude-task-master](https://github.com/eyaltoledano/claude-task-master)),
+and a resource hub (inspired by
+[awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code)).
+
+## 📦 Install
 
 Requires Python ≥ 3.9. No third-party dependencies.
 
@@ -44,22 +67,19 @@ pip install -e .
 PYTHONPATH=src python -m monolith --help
 ```
 
-## Quickstart
+Optional exact token counts in benchmarks: `pip install -e ".[bench]"` (adds `tiktoken`).
+
+## 🚀 Quickstart
 
 ```bash
 monolith init                 # detect agents, create .monolith/settings.json
 monolith apply --agent all    # write CLAUDE.md, AGENTS.md, copilot-instructions.md
 monolith doctor               # verify each agent picked up the rules
+monolith tier ultra --apply   # crank up compression
+monolith bench                # measure real token reduction on the sample corpus
 ```
 
-Switch how aggressive the rules are at any time:
-
-```bash
-monolith tier ultra --apply   # most aggressive, re-applies immediately
-monolith stats                # projected savings + one-time input cost
-```
-
-## Commands
+## 🧰 What you get
 
 **Token efficiency**
 
@@ -92,7 +112,18 @@ monolith stats                # projected savings + one-time input cost
 
 Global flag `--root <dir>` runs against another project directory.
 
-## How does it compare to caveman / token-efficient?
+## 🎚️ Tiers
+
+| Tier | Intensity | Projected output reduction* |
+|------|-----------|-----------------------------|
+| `lite` | filler removal only | ~25–35% |
+| `full` (default) | filler + dense formatting + no over-engineering | ~55–65% |
+| `ultra` | telegraphic, bullet-first, every directive | ~60–70% |
+
+\* Projections derived from upstream benchmarks, not per-project measurements.
+Run `monolith bench` for a figure measured on the sample corpus.
+
+## 📊 How does it compare to caveman / token-efficient?
 
 Run `monolith compare` for a provenance-tagged table. Honest summary:
 
@@ -107,18 +138,10 @@ Run `monolith compare` for a provenance-tagged table. Honest summary:
 Output reduction marked "measured" is Monolith's own corpus; the others are each
 project's **published** number. This is **not** a single-model head-to-head
 (impossible offline), so treat the three as comparable (~60–80%) rather than
-ranking them by a few points. Monolith's real edge is breadth — one cross-agent
-tool that also does tasks, a resource hub, and runtime `shrink` — not a higher
-compression percentage.
+ranking them by a few points. Monolith's edge is breadth — one cross-agent tool
+that also does tasks, a resource hub, and runtime `shrink`.
 
-## Measuring savings
-
-`monolith bench` measures the real token reduction between matched verbose/concise
-response pairs (exact counts if [`tiktoken`](https://github.com/openai/tiktoken)
-is installed, otherwise a heuristic), records it to `.monolith/stats.json`, and
-`monolith stats` then shows that measured figure next to the projected range.
-
-## Task management
+## 🗂️ Task management
 
 Point `monolith plan` at a PRD or any structured Markdown file. Headings and
 list items become tasks; nesting becomes parent/child. Wire up dependencies
@@ -135,24 +158,14 @@ with inline tags — `{#slug}` names a task and `@after:slug` depends on it:
 `monolith plan prd.md` writes a shared task store under `.monolith/tasks/` and a
 root `TASKS.md` your agents read as ordinary project context.
 
-## Tiers
-
-| Tier | Intensity | Projected output reduction* |
-|------|-----------|-----------------------------|
-| `lite` | filler removal only | ~25–35% |
-| `full` (default) | filler + dense formatting + no over-engineering | ~55–65% |
-| `ultra` | telegraphic, bullet-first, every directive | ~60–70% |
-
-\* Projections derived from upstream benchmarks, not per-project measurements.
-
-## Documentation
+## 📚 Documentation
 
 - [Usage guide](docs/USAGE.md)
 - Per-agent setup: [Claude Code](docs/agents/claude-code.md) ·
   [Codex](docs/agents/codex.md) · [Copilot](docs/agents/copilot.md)
 - [Roadmap](ROADMAP.md)
 
-## Development & branching
+## 🌱 Development & branching
 
 | Branch | Purpose |
 |--------|---------|
@@ -171,6 +184,15 @@ exist, creates the tag `vX.Y.Z` and a GitHub release. Bump `version` in
 python -m unittest discover -s tests -v   # run the tests locally
 ```
 
-## License
+## ☕ Support
+
+Monolith is free and MIT-licensed. If it saves you tokens (and money), consider
+chipping in for a coffee — it genuinely helps keep the project moving. 🙏
+
+[![Buy me a coffee via PayPal](https://img.shields.io/badge/☕%20Buy%20me%20a%20coffee-PayPal-00457C?logo=paypal&logoColor=white&style=for-the-badge)](https://paypal.me/keyurpatel446)
+
+> 👉 **[paypal.me/keyurpatel446](https://paypal.me/keyurpatel446)**
+
+## 📄 License
 
 MIT © Keyur Patel

@@ -1,0 +1,4 @@
+# Configures the "Sponsor" button shown at the top of the GitHub repo.
+# PayPal has no native key, so it is exposed via the `custom` URL list.
+custom:
+  - https://paypal.me/keyurpatel446
