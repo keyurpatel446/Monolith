@@ -24,11 +24,11 @@ monolith apply --agent all
 
 Tiers (`lite`/`full`/`ultra`) control how aggressive the "no filler, answer
 directly, dense formatting" rules are. `monolith bench` shows measured token
-reduction; `monolith compare` puts it next to caveman and token-efficient.
+reduction (~60–80% depending on tier, measured on a sample corpus).
 
-Honest take: compression is comparable to those tools (~60–80%); the point isn't
-a higher percentage, it's not maintaining three files. It also does PRD→task
-planning and runtime output `shrink` if you want them.
+Honest take: the point isn't a magic compression number — it's not maintaining
+three files. It also does PRD→task planning and runtime output `shrink` if you
+want them.
 
 MIT, stdlib-only core. Repo: https://github.com/keyurpatel446/Monolith — would
 love feedback on the rules themselves.

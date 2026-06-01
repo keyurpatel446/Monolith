@@ -7,10 +7,17 @@ All notable changes to this project are documented here. The format is based on
 ## [Unreleased]
 
 ### Added
+- `monolith scan [--apply]`: scan the repo for inline `@monolith:task` and
+  `@monolith:rule` tags and fold them into the task store / custom rules.
 - `docs/CAPABILITIES.md` (Capability × Monolith table) and `docs/ABOUT.md`
   (suggested GitHub About / topics).
 - Claude Code guide: install steps, installing hub commands as slash commands,
   and adding the `shrink` MCP server.
+
+### Removed
+- `monolith compare` command and the README competitor-comparison section.
+  Monolith is now presented on its own capabilities; honest projected-vs-measured
+  framing is kept.
 
 ## [0.1.2] - 2026-06-01
 

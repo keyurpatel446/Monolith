@@ -57,12 +57,10 @@ TOTAL  394 -> 77 tokens  (80%)
 ```
 
 That 80% is on *the sample corpus*, not your prompts — and I'm careful not to
-oversell it. `monolith compare` puts Monolith next to
-[caveman](https://github.com/JuliusBrussee/caveman) and
-[claude-token-efficient](https://github.com/drona23/claude-token-efficient),
-clearly labelling which numbers are **measured** here vs each project's
-**published** figure. The takeaway: they're all in the ~60–80% range. Monolith's
-edge isn't a higher percentage — it's being one tool across three agents.
+oversell it. Reduction lands in the ~60–80% range depending on tier, and
+Monolith labels projected vs measured numbers separately rather than quoting a
+single headline figure. The real edge isn't the percentage — it's being one tool
+across three agents.
 
 ## Beyond rules
 

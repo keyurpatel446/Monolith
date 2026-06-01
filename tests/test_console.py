@@ -141,12 +141,6 @@ class Phase3Tests(unittest.TestCase):
 
 
 class Phase45Tests(unittest.TestCase):
-    def test_compare_lists_approaches(self):
-        code, out = run(["compare"])
-        self.assertEqual(code, 0)
-        self.assertIn("caveman", out)
-        self.assertIn("Monolith", out)
-
     def test_hub_list_and_install(self):
         with tempfile.TemporaryDirectory() as root:
             code, out = run(["hub", "list"])
@@ -161,6 +155,21 @@ class Phase45Tests(unittest.TestCase):
     def test_hub_install_unknown_resource_errors(self):
         with tempfile.TemporaryDirectory() as root:
             self.assertEqual(run(["--root", root, "hub", "install", "nope"])[0], 1)
+
+    def test_scan_dry_run_then_apply(self):
+        marker = "@" + "monolith:"
+        with tempfile.TemporaryDirectory() as root:
+            with open(os.path.join(root, "x.py"), "w", encoding="utf-8") as fh:
+                fh.write(f"# {marker}task Wire up CI\n# {marker}rule Keep PRs small\n")
+            # Dry run reports but does not write a task store.
+            code, out = run(["--root", root, "scan"])
+            self.assertEqual(code, 0)
+            self.assertIn("dry run", out)
+            self.assertFalse(os.path.exists(os.path.join(root, "TASKS.md")))
+            # Apply writes tasks + rules.
+            code, out = run(["--root", root, "scan", "--apply"])
+            self.assertEqual(code, 0)
+            self.assertTrue(os.path.exists(os.path.join(root, "TASKS.md")))
 
     def test_shrink_file_reduces_tokens(self):
         with tempfile.TemporaryDirectory() as root:
