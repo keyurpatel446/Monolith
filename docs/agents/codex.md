@@ -26,5 +26,5 @@ You should see `OpenAI Codex  AGENTS.md  (managed block present)`.
 
 - `AGENTS.md` is the widely adopted convention for agent instructions and is
   read by Codex and several other agents, so this file does double duty.
-- Switch intensity with `monolith profile <lite|full|ultra> --apply`.
+- Switch intensity with `monolith tier <lite|full|ultra> --apply`.
 - User instructions in the conversation always override these rules.

@@ -27,6 +27,6 @@ Code you can also run `/memory` to confirm `CLAUDE.md` is loaded.
 
 - Claude Code merges `CLAUDE.md` files from parent directories and `~/.claude/`.
   Monolith manages the project-root file; user-global rules still apply on top.
-- To tighten output, switch profiles: `monolith profile ultra --apply`.
+- To tighten output, switch tiers: `monolith tier ultra --apply`.
 - User instructions in the conversation always override these rules — that line
   is part of every generated block.

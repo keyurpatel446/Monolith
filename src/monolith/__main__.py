@@ -1,6 +1,6 @@
 """Enable `python -m monolith`."""
 
-from monolith.cli import main
+from monolith.console import main
 
 if __name__ == "__main__":
     raise SystemExit(main())

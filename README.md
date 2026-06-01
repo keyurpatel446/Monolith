@@ -16,7 +16,7 @@ It synthesizes the best ideas from a few popular projects into one tool:
 
 - **Filler removal** — no greetings, closers, or restatement
   (inspired by [claude-token-efficient](https://github.com/drona23/claude-token-efficient)).
-- **Dense, low-token output** with intensity profiles `lite` / `full` / `ultra`
+- **Dense, low-token output** with intensity tiers `lite` / `full` / `ultra`
   (inspired by [caveman](https://github.com/JuliusBrussee/caveman)).
 - A roadmap toward **task management** and a **resource hub**
   (inspired by [claude-task-master](https://github.com/eyaltoledano/claude-task-master)
@@ -47,7 +47,7 @@ PYTHONPATH=src python -m monolith --help
 ## Quickstart
 
 ```bash
-monolith init                 # detect agents, create .monolith/config.json
+monolith init                 # detect agents, create .monolith/settings.json
 monolith apply --agent all    # write CLAUDE.md, AGENTS.md, copilot-instructions.md
 monolith doctor               # verify each agent picked up the rules
 ```
@@ -55,29 +55,29 @@ monolith doctor               # verify each agent picked up the rules
 Switch how aggressive the rules are at any time:
 
 ```bash
-monolith profile ultra --apply   # most aggressive, re-applies immediately
-monolith stats                   # projected savings + one-time input cost
+monolith tier ultra --apply   # most aggressive, re-applies immediately
+monolith stats                # projected savings + one-time input cost
 ```
 
 ## Commands
 
 | Command | Description |
 |---------|-------------|
-| `monolith init` | Detect agent files and create `.monolith/config.json`. |
-| `monolith apply [--agent all\|claude\|codex\|copilot\|config]` | Compile the ruleset into agent configs (idempotent). |
-| `monolith profile [name] [--apply]` | Show or switch the active profile. |
+| `monolith init` | Detect agent files and create `.monolith/settings.json`. |
+| `monolith apply [--agent all\|claude\|codex\|copilot\|config]` | Compile the directives into agent configs (idempotent). |
+| `monolith tier [name] [--apply]` | Show or switch the active compression tier. |
 | `monolith stats` | Show projected output reduction and the input cost of the block. |
 | `monolith doctor` | Verify each configured agent has the Monolith block. |
 
 Global flag `--root <dir>` runs against another project directory.
 
-## Profiles
+## Tiers
 
-| Profile | Intensity | Projected output reduction* |
-|---------|-----------|-----------------------------|
+| Tier | Intensity | Projected output reduction* |
+|------|-----------|-----------------------------|
 | `lite` | filler removal only | ~25–35% |
 | `full` (default) | filler + dense formatting + no over-engineering | ~55–65% |
-| `ultra` | telegraphic, bullet-first, every rule | ~60–70% |
+| `ultra` | telegraphic, bullet-first, every directive | ~60–70% |
 
 \* Projections derived from upstream benchmarks, not per-project measurements.
 

@@ -30,5 +30,5 @@ You should see
 - Copilot applies these instructions to chat and edit suggestions across the
   repository. Effects are strongest in Copilot Chat / agent modes.
 - Commit `.github/copilot-instructions.md` so the whole team benefits.
-- Switch intensity with `monolith profile <lite|full|ultra> --apply`.
+- Switch intensity with `monolith tier <lite|full|ultra> --apply`.
 - User instructions always override these rules.

@@ -24,7 +24,7 @@ Homepage = "https://github.com/keyurpatel446/monolith"
 Roadmap = "https://github.com/keyurpatel446/monolith/blob/main/ROADMAP.md"
 
 [project.scripts]
-monolith = "monolith.cli:main"
+monolith = "monolith.console:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/monolith"]

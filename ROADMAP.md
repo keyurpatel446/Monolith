@@ -25,12 +25,14 @@ Codex, and GitHub Copilot. This document is the living plan.
 - README, this roadmap, per-agent docs.
 
 ### Phase 1 — Token efficiency (MVP) ✅
-- Canonical ruleset (`rules.py`) + `lite` / `full` / `ultra` profiles.
-- Adapters compiling to `CLAUDE.md`, `AGENTS.md`,
+- Canonical directive catalog (`directives.py`) + `lite`/`full`/`ultra`
+  compression tiers (`compression.py`).
+- Self-registering compilers emitting `CLAUDE.md`, `AGENTS.md`,
   `.github/copilot-instructions.md`.
-- Idempotent, marker-bounded writes that preserve user content.
-- Commands: `init`, `apply`, `profile`, `stats`, `doctor`.
-- Unit tests for adapters and CLI.
+- Idempotent, marker-bounded writes (single-pass regex) that preserve user
+  content.
+- Commands: `init`, `apply`, `tier`, `stats`, `doctor`.
+- Unit tests for the compilers and the console.
 
 ### Phase 2 — Stats & benchmarks
 - Real before/after token measurement, not just projections.
@@ -64,6 +66,7 @@ Codex, and GitHub Copilot. This document is the living plan.
 
 ## Adding a new agent
 
-Create an adapter subclass in `src/monolith/adapters/` setting `key`, `label`,
-`target_path`, and `intro()`, then register it in `adapters/__init__.py`. The
-base class handles idempotent rendering and writes.
+Create a `Compiler` subclass in `src/monolith/adapters/`, set `key`, `label`,
+`target_path`, and override `preamble()`, then decorate it with `@register`.
+Add the module to the import list at the bottom of `adapters/__init__.py`. The
+base `Compiler` handles idempotent rendering and writes — no other wiring.
