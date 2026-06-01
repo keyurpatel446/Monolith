@@ -34,17 +34,23 @@ Codex, and GitHub Copilot. This document is the living plan.
 - Commands: `init`, `apply`, `tier`, `stats`, `doctor`.
 - Unit tests for the compilers and the console.
 
-### Phase 2 — Stats & benchmarks
-- Real before/after token measurement, not just projections.
-- A benchmark harness with sample prompts to validate per-profile reduction.
-- `monolith stats` reads recorded runs from `.monolith/stats.json`.
-- Custom rule management from the CLI (`monolith rules add/remove/list`).
+### Phase 2 — Stats & benchmarks ✅
+- Real before/after token measurement via a benchmark corpus (`benchmark.py`).
+- Token counter (`tokens.py`) using `tiktoken` when present, heuristic otherwise.
+- `monolith bench` records measured reduction to `.monolith/stats.json`;
+  `monolith stats` shows it next to the projected range.
+- Custom rule management from the CLI: `monolith rules list/add/remove`.
+- Unit tests for the harness, token counter, and rule commands.
 
-### Phase 3 — Task management
-- `monolith plan <prd-file>`: parse a requirements doc into a task tree.
-- Dependency tracking and status (`todo` / `doing` / `done`).
-- Emit tasks into each agent's conventions (e.g. a `TASKS.md` the agent reads).
-- Agent-agnostic task store under `.monolith/tasks/`.
+### Phase 3 — Task management ✅
+- `monolith plan <prd-file>`: parse a PRD/Markdown file into a task tree
+  (`tasks.py`).
+- Dependency tracking via `{#slug}` / `@after:slug` tags; status
+  `todo`/`doing`/`done` with unmet-dependency warnings.
+- Emits a root `TASKS.md` the agents read; agent-agnostic store under
+  `.monolith/tasks/tasks.json`.
+- `monolith tasks` (list) and `monolith task <id> --status` (update).
+- Unit tests for parsing, nesting, dependencies, status, and rendering.
 
 ### Phase 4 — Resource hub
 - Curated catalog of skills, slash-commands, hooks, and prompts.
@@ -61,7 +67,8 @@ Codex, and GitHub Copilot. This document is the living plan.
 1. **Author once, compile everywhere.** One source of truth per concern.
 2. **Idempotent & non-destructive.** Never clobber user-authored content.
 3. **Honest numbers.** Label projections vs. measurements.
-4. **Few dependencies.** Phase 1 is stdlib-only; add deps only when they earn it.
+4. **Few dependencies.** The core is stdlib-only; `tiktoken` is an optional
+   extra (`[bench]`) that only sharpens measurement. Add deps only when earned.
 5. **Agent-agnostic core, thin adapters.** New agents = a new small adapter.
 
 ## Adding a new agent

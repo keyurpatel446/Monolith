@@ -16,8 +16,13 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Environment :: Console",
 ]
-# Phase 1 is intentionally dependency-free (stdlib only) for portable installs.
+# The core is intentionally dependency-free (stdlib only) for portable installs.
 dependencies = []
+
+[project.optional-dependencies]
+# `pip install monolith-ai[bench]` enables exact token counts in `monolith
+# bench`; without it the benchmark falls back to a heuristic counter.
+bench = ["tiktoken>=0.5"]
 
 [project.urls]
 Homepage = "https://github.com/keyurpatel446/monolith"

@@ -61,9 +61,35 @@ With no `name`, prints the active tier and the available ones. With a
 immediately.
 
 ### `monolith stats`
-Prints the projected per-response output reduction for the active tier and
-the one-time input-token cost of the managed block in each agent file. All
-reduction figures are labeled as projections, not measurements.
+Prints the projected per-response output reduction for the active tier, the
+one-time input-token cost of the managed block in each agent file, and — if you
+have run `monolith bench` — the last *measured* reduction. Projections are
+labeled separately from measurements.
+
+### `monolith bench`
+Runs the built-in benchmark corpus (matched verbose/concise response pairs),
+prints per-sample and aggregate measured reduction, and records the headline to
+`.monolith/stats.json`. Uses [`tiktoken`](https://github.com/openai/tiktoken)
+for exact counts when installed, otherwise a ~4-chars/token heuristic; the
+active counter is shown in the output.
+
+### `monolith rules list | add <text> | remove <index|text>`
+Manages the `extra_rules` in your settings — custom directives appended to every
+generated block. `add` appends a rule, `remove` takes a 1-based index or the
+exact rule text, `list` prints them. Re-run `monolith apply` afterwards.
+
+### `monolith plan <prd-file> [--force]`
+Parses a PRD/Markdown file into a task tree (see *Task management* below), saves
+it to `.monolith/tasks/tasks.json`, and writes a root `TASKS.md`. Refuses to
+overwrite an existing plan unless `--force` is given.
+
+### `monolith tasks [--emit]`
+Lists the current task tree with status and dependencies. `--emit` re-writes
+`TASKS.md` from the stored tasks.
+
+### `monolith task <id> --status {todo,doing,done}`
+Updates one task's status, re-saves the store, and re-emits `TASKS.md`. Warns
+(without blocking) if you advance a task whose dependencies are not yet `done`.
 
 ### `monolith doctor`
 Checks each configured agent's file for a healthy Monolith block and reports
@@ -92,6 +118,43 @@ the generated block for every agent.
   ]
 }
 ```
+
+Or manage them from the CLI without editing JSON:
+
+```bash
+monolith rules add "Never edit files under vendor/."
+monolith rules list
+monolith rules remove 1
+```
+
+## Task management
+
+`monolith plan <file>` turns a PRD or any structured Markdown into a tracked
+task tree. The parsing conventions are intentionally small:
+
+- **Headings** (`#`..`######`) and **list items** (`-`, `*`, `+`, `1.`) each
+  become a task; nesting (heading depth + list indentation) sets parent/child.
+- **`{#slug}`** names a task so others can depend on it.
+- **`@after:slug1,slug2`** declares dependencies on named tasks.
+
+```markdown
+# Auth feature
+- Design DB schema {#schema}
+- Build API @after:schema
+  - Add input validation
+## Release @after:schema
+```
+
+```bash
+monolith plan prd.md           # parse -> .monolith/tasks/tasks.json + TASKS.md
+monolith tasks                 # show the tree with status + deps
+monolith task T3 --status doing
+monolith task T2 --status done
+```
+
+`tasks.json` and `settings.json` are meant to be committed (shared with the
+team); `stats.json` is local and git-ignored. `TASKS.md` is fully generated —
+edit tasks through the commands, not the file.
 
 ## Tests
 

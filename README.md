@@ -61,15 +61,51 @@ monolith stats                # projected savings + one-time input cost
 
 ## Commands
 
+**Token efficiency**
+
 | Command | Description |
 |---------|-------------|
 | `monolith init` | Detect agent files and create `.monolith/settings.json`. |
 | `monolith apply [--agent all\|claude\|codex\|copilot\|config]` | Compile the directives into agent configs (idempotent). |
 | `monolith tier [name] [--apply]` | Show or switch the active compression tier. |
-| `monolith stats` | Show projected output reduction and the input cost of the block. |
+| `monolith stats` | Show projected reduction, last measured reduction, and the input cost of the block. |
+| `monolith bench` | Run the built-in benchmark corpus and record measured token reduction. |
+| `monolith rules list\|add\|remove [value]` | Manage custom directives appended to every block. |
 | `monolith doctor` | Verify each configured agent has the Monolith block. |
 
+**Task management**
+
+| Command | Description |
+|---------|-------------|
+| `monolith plan <prd-file> [--force]` | Parse a PRD/Markdown file into a task tree; writes `TASKS.md`. |
+| `monolith tasks [--emit]` | List the task tree; `--emit` re-writes `TASKS.md`. |
+| `monolith task <id> --status todo\|doing\|done` | Update a task's status (warns on unmet dependencies). |
+
 Global flag `--root <dir>` runs against another project directory.
+
+## Measuring savings
+
+`monolith bench` measures the real token reduction between matched verbose/concise
+response pairs (exact counts if [`tiktoken`](https://github.com/openai/tiktoken)
+is installed, otherwise a heuristic), records it to `.monolith/stats.json`, and
+`monolith stats` then shows that measured figure next to the projected range.
+
+## Task management
+
+Point `monolith plan` at a PRD or any structured Markdown file. Headings and
+list items become tasks; nesting becomes parent/child. Wire up dependencies
+with inline tags — `{#slug}` names a task and `@after:slug` depends on it:
+
+```markdown
+# Auth feature
+- Design DB schema {#schema}
+- Build API @after:schema
+  - Add input validation
+## Release @after:schema
+```
+
+`monolith plan prd.md` writes a shared task store under `.monolith/tasks/` and a
+root `TASKS.md` your agents read as ordinary project context.
 
 ## Tiers
 

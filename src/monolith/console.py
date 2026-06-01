@@ -5,7 +5,12 @@ Sub-commands
     init      detect agents in the repo and create .monolith/settings.json
     apply     compile the directives into each agent's native config file
     tier      show or switch the active compression tier
-    stats     show projected token savings for the active tier
+    stats     show projected + last-measured token savings for the active tier
+    bench     run the benchmark corpus and record measured token reduction
+    rules     list / add / remove custom directives (extra_rules)
+    plan      parse a PRD/Markdown file into a task tree (writes TASKS.md)
+    tasks     list the task tree (optionally re-emit TASKS.md)
+    task      update a single task's status
     doctor    verify each configured agent picked up the Monolith block
 
 The module exposes :func:`main`, which is the ``monolith`` console-script entry
@@ -20,6 +25,7 @@ from typing import List, Sequence
 
 from monolith import __version__
 from monolith.adapters import all_keys, get_compiler
+from monolith.benchmark import load_last_report, run_benchmark, save_report
 from monolith.compression import DEFAULT_TIER, get_tier, tier_names
 from monolith.settings import (
     default_settings,
@@ -28,15 +34,22 @@ from monolith.settings import (
     save_settings,
     settings_exist,
 )
-
-# Rough heuristic: English text averages ~4 characters per token. Good enough
-# for reporting the fixed input cost of the managed block.
-_CHARS_PER_TOKEN = 4
+from monolith.tasks import (
+    STATUSES,
+    emit_tasks_md,
+    load_tasks,
+    parse_prd,
+    render_tree_lines,
+    save_tasks,
+    set_status,
+    tasks_exist,
+)
+from monolith.tokens import count_tokens
 
 
 def estimate_tokens(text: str) -> int:
-    """Return a coarse token estimate for ``text`` (never less than 1)."""
-    return max(1, len(text) // _CHARS_PER_TOKEN)
+    """Return the token count for ``text`` (exact if tiktoken is installed)."""
+    return count_tokens(text)
 
 
 def _resolve_agents(requested: str | None, settings: dict) -> List[str]:
@@ -167,9 +180,147 @@ def cmd_stats(args: argparse.Namespace) -> int:
             f"    {compiler.label:<14} ~{estimate_tokens(block)} tokens "
             f"({compiler.target_path})"
         )
-    print("\n  Note: reductions are projections derived from upstream benchmarks,")
-    print("  not measurements. Savings accrue once output volume outweighs the")
-    print("  small fixed input cost above.")
+    # Surface the most recent measured benchmark, if one has been run.
+    last = load_last_report(root)
+    if last:
+        print(
+            f"\n  last measured reduction: {last['reduction'] * 100:.0f}% "
+            f"over {last['samples']} samples "
+            f"({last['baseline_tokens']}->{last['optimized_tokens']} tokens, "
+            f"{last['counter']})"
+        )
+    else:
+        print("\n  (run `monolith bench` to record a measured reduction)")
+
+    print("\n  Note: projections derive from upstream benchmarks; the measured")
+    print("  figure is over Monolith's sample corpus. Savings accrue once output")
+    print("  volume outweighs the small fixed input cost above.")
+    return 0
+
+
+def cmd_bench(args: argparse.Namespace) -> int:
+    """Run the benchmark corpus, print results, and record them."""
+    report = run_benchmark()
+    print(f"Monolith benchmark ({report.counter})")
+    for result in report.results:
+        print(
+            f"  {result.name:<16} {result.verbose_tokens:>4} -> "
+            f"{result.concise_tokens:>4} tokens  ({result.reduction * 100:.0f}%)"
+        )
+    print(
+        f"  {'TOTAL':<16} {report.baseline_tokens:>4} -> "
+        f"{report.optimized_tokens:>4} tokens  ({report.reduction * 100:.0f}%)"
+    )
+    path = save_report(report, args.root)
+    print(f"\nRecorded to {path}")
+    return 0
+
+
+def cmd_rules(args: argparse.Namespace) -> int:
+    """List, add, or remove custom directives stored in settings."""
+    root = args.root
+    settings = load_settings(root)
+    rules = extra_rules(settings)
+
+    if args.action == "list":
+        if not rules:
+            print("No custom rules. Add one with `monolith rules add \"...\"`.")
+            return 0
+        print("Custom rules:")
+        for index, rule in enumerate(rules, start=1):
+            print(f"  {index}. {rule}")
+        return 0
+
+    if args.action == "add":
+        if not args.value:
+            print("error: `rules add` needs the rule text", file=sys.stderr)
+            return 1
+        rules.append(args.value)
+        settings["extra_rules"] = rules
+        save_settings(settings, root)
+        print(f"Added rule #{len(rules)}. Run `monolith apply` to regenerate configs.")
+        return 0
+
+    # action == "remove": accept a 1-based index or an exact text match.
+    if not args.value:
+        print("error: `rules remove` needs an index or the exact rule text", file=sys.stderr)
+        return 1
+    removed = None
+    if args.value.isdigit():
+        idx = int(args.value)
+        if 1 <= idx <= len(rules):
+            removed = rules.pop(idx - 1)
+    elif args.value in rules:
+        rules.remove(args.value)
+        removed = args.value
+    if removed is None:
+        print(f"error: no rule matching {args.value!r}", file=sys.stderr)
+        return 1
+    settings["extra_rules"] = rules
+    save_settings(settings, root)
+    print(f"Removed: {removed}. Run `monolith apply` to regenerate configs.")
+    return 0
+
+
+def cmd_plan(args: argparse.Namespace) -> int:
+    """Parse a PRD/Markdown file into a task tree and emit TASKS.md."""
+    root = args.root
+    if tasks_exist(root) and not args.force:
+        print("A task plan already exists (use --force to overwrite).")
+        return 1
+    try:
+        with open(args.prd, "r", encoding="utf-8") as handle:
+            text = handle.read()
+    except OSError as exc:
+        print(f"error: cannot read PRD: {exc}", file=sys.stderr)
+        return 1
+
+    tasks = parse_prd(text)
+    if not tasks:
+        print("No headings or list items found; nothing to plan.")
+        return 1
+
+    save_tasks(tasks, root)
+    md_path = emit_tasks_md(tasks, root)
+    print(f"Planned {len(tasks)} task(s).")
+    print(f"  store: {root}/.monolith/tasks/tasks.json")
+    print(f"  agents read: {md_path}")
+    return 0
+
+
+def cmd_tasks(args: argparse.Namespace) -> int:
+    """List the current task tree; optionally re-emit TASKS.md."""
+    root = args.root
+    tasks = load_tasks(root)
+    if not tasks:
+        print("No tasks yet. Create some with `monolith plan <prd-file>`.")
+        return 0
+    done = sum(1 for t in tasks if t.status == "done")
+    print(f"Tasks ({done}/{len(tasks)} done):")
+    for line in render_tree_lines(tasks):
+        print(f"  {line}")
+    if args.emit:
+        path = emit_tasks_md(tasks, root)
+        print(f"\nRe-emitted {path}")
+    return 0
+
+
+def cmd_task(args: argparse.Namespace) -> int:
+    """Update a single task's status, then re-emit TASKS.md."""
+    root = args.root
+    tasks = load_tasks(root)
+    if not tasks:
+        print("No tasks yet. Create some with `monolith plan <prd-file>`.")
+        return 1
+
+    changed, message = set_status(tasks, args.id, args.status)
+    if not changed:
+        print(f"error: {message}", file=sys.stderr)
+        return 1
+
+    save_tasks(tasks, root)
+    emit_tasks_md(tasks, root)
+    print(message)
     return 0
 
 
@@ -235,8 +386,32 @@ def build_parser() -> argparse.ArgumentParser:
     p_tier.add_argument("--apply", action="store_true", help="re-apply configs after switching")
     p_tier.set_defaults(func=cmd_tier)
 
-    p_stats = sub.add_parser("stats", help="show projected token savings")
+    p_stats = sub.add_parser("stats", help="show projected + measured token savings")
     p_stats.set_defaults(func=cmd_stats)
+
+    p_bench = sub.add_parser("bench", help="run the benchmark corpus, record results")
+    p_bench.set_defaults(func=cmd_bench)
+
+    p_rules = sub.add_parser("rules", help="list/add/remove custom directives")
+    p_rules.add_argument("action", choices=["list", "add", "remove"])
+    p_rules.add_argument(
+        "value", nargs="?", help="rule text (add) or index/text (remove)"
+    )
+    p_rules.set_defaults(func=cmd_rules)
+
+    p_plan = sub.add_parser("plan", help="parse a PRD/Markdown file into a task tree")
+    p_plan.add_argument("prd", help="path to the PRD / Markdown file")
+    p_plan.add_argument("--force", action="store_true", help="overwrite an existing plan")
+    p_plan.set_defaults(func=cmd_plan)
+
+    p_tasks = sub.add_parser("tasks", help="list the task tree")
+    p_tasks.add_argument("--emit", action="store_true", help="re-write TASKS.md")
+    p_tasks.set_defaults(func=cmd_tasks)
+
+    p_task = sub.add_parser("task", help="update a single task's status")
+    p_task.add_argument("id", help="task id, e.g. T3")
+    p_task.add_argument("--status", required=True, choices=STATUSES, help="new status")
+    p_task.set_defaults(func=cmd_task)
 
     p_doctor = sub.add_parser("doctor", help="verify agent configs are set up")
     p_doctor.set_defaults(func=cmd_doctor)
