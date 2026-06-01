@@ -52,11 +52,10 @@ Codex, and GitHub Copilot. This document is the living plan.
 - `monolith tasks` (list) and `monolith task <id> --status` (update).
 - Unit tests for parsing, nesting, dependencies, status, and rendering.
 
-### Phase 2.5 — Comparison harness ✅
-- `monolith compare` (`compare.py`): objective input-overhead measured for every
-  approach with one tokenizer, plus output reduction tagged `measured`
-  (Monolith corpus) vs `published` (caveman / token-efficient figures).
-- Deliberately conservative and provenance-tagged — no fabricated head-to-head.
+### Phase 3.5 — Inline tags ✅
+- `monolith scan` (`scan.py`): walk the repo for `@monolith:task` and
+  `@monolith:rule` tags and fold them into the task store / custom rules.
+- Dry run by default; idempotent on `--apply`.
 
 ### Phase 4 — Resource hub ✅
 - Curated, in-package catalog of cross-agent commands/prompts (`hub.py`).

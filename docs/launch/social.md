@@ -21,8 +21,8 @@ Idempotent: it only edits between markers, so your own notes stay put.
 
 **3/**
 Three tiers — lite / full / ultra — control how hard it compresses output.
-`monolith bench` measures the real reduction (~60–80%).
-`monolith compare` shows it next to caveman & token-efficient, with provenance.
+`monolith bench` measures the real reduction (~60–80% on a sample corpus).
+Numbers are labelled measured vs projected — no overclaiming.
 
 **4/**
 It's not just rules:
@@ -48,8 +48,7 @@ depending on the tier.
 
 It also does measured benchmarking, PRD-to-task planning, a resource hub, and
 runtime output compression. Dependency-free core, MIT-licensed, and deliberately
-honest about its numbers (it ships a `compare` command that labels measured vs
-published figures).
+honest about its numbers (measured vs projected are labelled separately).
 
 Repo + docs: https://github.com/keyurpatel446/Monolith
 Feedback and contributions welcome. #AI #DeveloperTools #OpenSource #LLM

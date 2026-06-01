@@ -91,12 +91,16 @@ Lists the current task tree with status and dependencies. `--emit` re-writes
 Updates one task's status, re-saves the store, and re-emits `TASKS.md`. Warns
 (without blocking) if you advance a task whose dependencies are not yet `done`.
 
-### `monolith compare`
-Prints a provenance-tagged comparison of Monolith against caveman and
-claude-token-efficient. **Input overhead** is measured here for every approach
-with the same tokenizer (objective). **Output reduction** is labeled `measured`
-for Monolith's corpus and `published` for the other projects' own figures — it
-is not a single-model head-to-head, which is impossible offline.
+### `monolith scan [--apply]`
+Walks the repo for inline `@monolith:` tags and acts on them. `@monolith:task
+<title>` (with optional `{#slug}` / `@after:slug`) adds a task; `@monolith:rule
+<text>` adds a custom directive. Dry run by default — pass `--apply` to write.
+Idempotent: tasks de-dupe by title, rules by text.
+
+```python
+# @monolith:task Add rate limiting {#ratelimit} @after:auth
+# @monolith:rule Always validate request bodies
+```
 
 ### `monolith hub list | search <q> | show <id> | install <id> [--agent]`
 Browse and install curated, token-frugal agent resources (slash commands and
