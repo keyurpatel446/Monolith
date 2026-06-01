@@ -7,8 +7,8 @@ Sub-commands
     tier      show or switch the active compression tier
     stats     show projected + last-measured token savings for the active tier
     bench     run the benchmark corpus and record measured token reduction
-    compare   compare Monolith against caveman / token-efficient
     rules     list / add / remove custom directives (extra_rules)
+    scan      scan the repo for @monolith: tags and apply them
     plan      parse a PRD/Markdown file into a task tree (writes TASKS.md)
     tasks     list the task tree (optionally re-emit TASKS.md)
     task      update a single task's status
@@ -30,10 +30,10 @@ from typing import List, Sequence
 from monolith import __version__
 from monolith.adapters import all_keys, get_compiler
 from monolith.benchmark import load_last_report, run_benchmark, save_report
-from monolith.compare import run_comparison
 from monolith.compression import DEFAULT_TIER, get_tier, tier_names
 from monolith import hub as hub_module
 from monolith.mcp_server import serve as mcp_serve
+from monolith.scan import apply_found, scan_repo
 from monolith.shrink import DEFAULT_LEVEL, LEVELS, shrink
 from monolith.settings import (
     default_settings,
@@ -224,25 +224,6 @@ def cmd_bench(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_compare(args: argparse.Namespace) -> int:
-    """Compare Monolith against caveman / token-efficient, with provenance."""
-    report = run_comparison()
-    print(f"Monolith comparison ({report.counter})\n")
-    print(f"  {'approach':<24} {'input overhead':>14} {'output reduction':>18}")
-    print(f"  {'-' * 24} {'-' * 14:>14} {'-' * 18:>18}")
-    for result in report.results:
-        tag = "measured" if result.measured else "published"
-        print(
-            f"  {result.label:<24} {result.input_overhead_tokens:>10} tok "
-            f"{result.output_reduction * 100:>13.0f}% ({tag})"
-        )
-    print("\n  Input overhead is measured here for every approach (same counter).")
-    print("  Output reduction: 'measured' = Monolith's corpus; 'published' = the")
-    print("  other project's own reported figure (see their READMEs). This is not")
-    print("  a single-model head-to-head, which is not possible offline.")
-    return 0
-
-
 def cmd_rules(args: argparse.Namespace) -> int:
     """List, add, or remove custom directives stored in settings."""
     root = args.root
@@ -286,6 +267,33 @@ def cmd_rules(args: argparse.Namespace) -> int:
     settings["extra_rules"] = rules
     save_settings(settings, root)
     print(f"Removed: {removed}. Run `monolith apply` to regenerate configs.")
+    return 0
+
+
+def cmd_scan(args: argparse.Namespace) -> int:
+    """Scan the repo for @monolith: tags; report, and apply with --apply."""
+    root = args.root
+    found = scan_repo(root)
+
+    print(f"Found {len(found.tasks)} task tag(s) and {len(found.rules)} rule tag(s).")
+    for title in found.tasks:
+        print(f"  task: {title}")
+    for text in found.rules:
+        print(f"  rule: {text}")
+
+    if found.total() == 0:
+        return 0
+    if not args.apply:
+        print("\n(dry run — pass --apply to add these to tasks/rules)")
+        return 0
+
+    added_tasks, added_rules = apply_found(found, root)
+    print(
+        f"\nApplied: {len(added_tasks)} new task(s), {len(added_rules)} new rule(s) "
+        "(duplicates skipped)."
+    )
+    if added_rules:
+        print("Run `monolith apply` to regenerate agent configs with the new rules.")
     return 0
 
 
@@ -497,15 +505,16 @@ def build_parser() -> argparse.ArgumentParser:
     p_bench = sub.add_parser("bench", help="run the benchmark corpus, record results")
     p_bench.set_defaults(func=cmd_bench)
 
-    p_compare = sub.add_parser("compare", help="compare vs caveman / token-efficient")
-    p_compare.set_defaults(func=cmd_compare)
-
     p_rules = sub.add_parser("rules", help="list/add/remove custom directives")
     p_rules.add_argument("action", choices=["list", "add", "remove"])
     p_rules.add_argument(
         "value", nargs="?", help="rule text (add) or index/text (remove)"
     )
     p_rules.set_defaults(func=cmd_rules)
+
+    p_scan = sub.add_parser("scan", help="scan the repo for @monolith: tags")
+    p_scan.add_argument("--apply", action="store_true", help="apply found tags (default: dry run)")
+    p_scan.set_defaults(func=cmd_scan)
 
     p_plan = sub.add_parser("plan", help="parse a PRD/Markdown file into a task tree")
     p_plan.add_argument("prd", help="path to the PRD / Markdown file")

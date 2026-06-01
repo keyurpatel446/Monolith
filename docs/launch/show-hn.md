@@ -18,18 +18,16 @@ between markers, so your own notes are safe). `monolith init && monolith apply
 --agent all` and you're done.
 
 It also grew a few things around that: `bench` measures real token reduction on
-a sample corpus, `compare` puts it next to caveman / claude-token-efficient
-(with provenance — see below), `plan` turns a PRD into a tracked task tree, and
-`shrink` compresses verbose tool output deterministically.
+a sample corpus, `plan` turns a PRD into a tracked task tree, `scan` pulls
+`@monolith:` tags out of your code into tasks/rules, and `shrink` compresses
+verbose tool output deterministically.
 
 Honesty notes, because HN will (rightly) ask:
 - Output reduction is ~60–80% depending on tier. The 80% figure is measured on
   *my* sample corpus with a heuristic counter (or tiktoken if installed), not
   your prompts.
-- I do **not** claim to beat caveman/token-efficient on compression — they're in
-  the same ballpark. Monolith's only real edge is breadth: one tool across three
-  agents, plus tasks/hub/shrink. `monolith compare` labels every number as
-  measured vs published.
+- The win isn't a magic compression number — it's breadth: one ruleset across
+  three agents, plus tasks/hub/scan/shrink, in a dependency-free CLI.
 
 Core is stdlib-only. MIT. Feedback (especially "this claim is too strong")
 very welcome.

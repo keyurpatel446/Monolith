@@ -24,16 +24,17 @@ Target: https://github.com/hesreallyhim/awesome-claude-code
 ```
 Adding Monolith, a dependency-free CLI that compiles one token-efficiency
 ruleset into Claude Code (CLAUDE.md), OpenAI Codex (AGENTS.md), and GitHub
-Copilot config. It also includes measured benchmarking (`bench`/`compare`),
-PRD→task planning (`plan`), a curated resource hub (`hub`), and deterministic
-runtime output compression (`shrink`) with an experimental MCP server.
+Copilot config. It also includes measured benchmarking (`bench`), PRD→task
+planning (`plan`), inline `@monolith:` tag scanning (`scan`), a curated resource
+hub (`hub`), and deterministic runtime output compression (`shrink`) with an
+experimental MCP server.
 
 - Repo: https://github.com/keyurpatel446/Monolith
 - License: MIT
 - Core is stdlib-only; tiktoken is an optional extra.
 
-I've tried to keep the docs honest — the README and a `compare` command label
-measured vs published reduction figures rather than claiming a head-to-head win.
+I've tried to keep the docs honest — reductions are labelled projected vs
+measured rather than quoting a single headline figure.
 ```
 
 ## How to submit

@@ -6,6 +6,21 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-06-01
+
+### Added
+- `monolith scan [--apply]`: scan the repo for inline `@monolith:task` and
+  `@monolith:rule` tags and fold them into the task store / custom rules.
+- `docs/CAPABILITIES.md` (Capability × Monolith table) and `docs/ABOUT.md`
+  (suggested GitHub About / topics).
+- Claude Code guide: install steps, installing hub commands as slash commands,
+  and adding the `shrink` MCP server.
+
+### Removed
+- `monolith compare` command and the README competitor-comparison section.
+  Monolith is now presented on its own capabilities; honest projected-vs-measured
+  framing is kept.
+
 ## [0.1.2] - 2026-06-01
 
 ### Fixed
@@ -46,7 +61,8 @@ All notable changes to this project are documented here. The format is based on
 - CI with test matrix (Python 3.9/3.11/3.12) and auto-tagging on merge to
   `master`.
 
-[Unreleased]: https://github.com/keyurpatel446/Monolith/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/keyurpatel446/Monolith/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/keyurpatel446/Monolith/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/keyurpatel446/Monolith/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/keyurpatel446/Monolith/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/keyurpatel446/Monolith/releases/tag/v0.1.0
