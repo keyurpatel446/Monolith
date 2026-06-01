@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-06-01
+
 ### Fixed
 - `--version` now reads from installed package metadata (single-sourced), fixing
   a drift where it reported the previous version.
@@ -44,6 +46,7 @@ All notable changes to this project are documented here. The format is based on
 - CI with test matrix (Python 3.9/3.11/3.12) and auto-tagging on merge to
   `master`.
 
-[Unreleased]: https://github.com/keyurpatel446/Monolith/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/keyurpatel446/Monolith/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/keyurpatel446/Monolith/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/keyurpatel446/Monolith/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/keyurpatel446/Monolith/releases/tag/v0.1.0
