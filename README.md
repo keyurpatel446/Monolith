@@ -145,6 +145,8 @@ project's **published** number. This is **not** a single-model head-to-head
 ranking them by a few points. Monolith's edge is breadth — one cross-agent tool
 that also does tasks, a resource hub, and runtime `shrink`.
 
+See [docs/CAPABILITIES.md](docs/CAPABILITIES.md) for the full capability list.
+
 ## 🗂️ Task management
 
 Point `monolith plan` at a PRD or any structured Markdown file. Headings and
@@ -164,7 +166,7 @@ root `TASKS.md` your agents read as ordinary project context.
 
 ## 📚 Documentation
 
-- [Usage guide](docs/USAGE.md)
+- [Usage guide](docs/USAGE.md) · [Capabilities](docs/CAPABILITIES.md)
 - Per-agent setup: [Claude Code](docs/agents/claude-code.md) ·
   [Codex](docs/agents/codex.md) · [Copilot](docs/agents/copilot.md)
 - [Roadmap](ROADMAP.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)

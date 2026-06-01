@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Added
+- `docs/CAPABILITIES.md` (Capability × Monolith table) and `docs/ABOUT.md`
+  (suggested GitHub About / topics).
+- Claude Code guide: install steps, installing hub commands as slash commands,
+  and adding the `shrink` MCP server.
+
 ## [0.1.2] - 2026-06-01
 
 ### Fixed
