@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Question or idea
+    url: https://github.com/keyurpatel446/Monolith/discussions
+    about: Ask questions or share ideas in Discussions.
