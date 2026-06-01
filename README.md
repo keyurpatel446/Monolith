@@ -152,6 +152,25 @@ root `TASKS.md` your agents read as ordinary project context.
   [Codex](docs/agents/codex.md) · [Copilot](docs/agents/copilot.md)
 - [Roadmap](ROADMAP.md)
 
+## Development & branching
+
+| Branch | Purpose |
+|--------|---------|
+| `master` | Default / release branch. Merges here trigger CI to tag a release. |
+| `develop` | Integration branch for completed features. |
+| `fetcher/<name>` | Feature work. |
+| `fix/<name>` | Bug fixes. |
+
+CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs the test suite
+on every push/PR to `master` and `develop`. When code is merged to `master`, it
+reads the version from `pyproject.toml` and, if a matching tag does not yet
+exist, creates the tag `vX.Y.Z` and a GitHub release. Bump `version` in
+`pyproject.toml` to cut a new release.
+
+```bash
+python -m unittest discover -s tests -v   # run the tests locally
+```
+
 ## License
 
 MIT © Keyur Patel
