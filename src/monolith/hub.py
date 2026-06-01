@@ -86,6 +86,46 @@ CATALOG: List[Resource] = [
             "- No restatement of the code line by line.\n"
         ),
     ),
+    Resource(
+        id="test-plan",
+        kind="prompt",
+        summary="List the test cases worth writing for the selected code.",
+        targets=_paths("test-plan"),
+        body=(
+            "# test-plan\n\n"
+            "List the test cases worth writing for the selected code.\n\n"
+            "- One line per case: input/condition -> expected result.\n"
+            "- Cover happy path, boundaries, and error cases.\n"
+            "- Flag anything currently untestable and why. No test code yet.\n"
+        ),
+    ),
+    Resource(
+        id="tighten-prose",
+        kind="prompt",
+        summary="Rewrite the selected text to be shorter without losing meaning.",
+        targets=_paths("tighten-prose"),
+        body=(
+            "# tighten-prose\n\n"
+            "Rewrite the selected text to use fewer tokens while preserving all\n"
+            "information.\n\n"
+            "- Cut filler, hedging, and repetition; keep technical accuracy.\n"
+            "- Preserve code, names, and numbers exactly.\n"
+            "- Return only the rewrite.\n"
+        ),
+    ),
+    Resource(
+        id="explain-diff",
+        kind="command",
+        summary="Summarize what the current diff changes, one bullet per change.",
+        targets=_paths("explain-diff"),
+        body=(
+            "# explain-diff\n\n"
+            "Summarize what the current diff changes.\n\n"
+            "- One bullet per logical change: `path — what changed and why`.\n"
+            "- Call out behaviour changes and anything risky.\n"
+            "- No restating unchanged code; no praise.\n"
+        ),
+    ),
 ]
 
 
