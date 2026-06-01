@@ -6,9 +6,17 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-06-01
+
 ### Added
 - PyPI publish workflow (`.github/workflows/publish.yml`) triggered on `v*` tags.
-- Contributor docs: `CONTRIBUTING.md`, issue/PR templates, and a demo script.
+- Contributor docs: `CONTRIBUTING.md`, issue/PR templates, and a demo script
+  (`scripts/demo.sh`).
+- Launch copy pack under `docs/launch/`.
+
+### Changed
+- README install now leads with `pipx`/`pip` and links the changelog,
+  contributing guide, and demo.
 
 ## [0.1.0] - 2026-06-01
 
@@ -28,5 +36,6 @@ All notable changes to this project are documented here. The format is based on
 - CI with test matrix (Python 3.9/3.11/3.12) and auto-tagging on merge to
   `master`.
 
-[Unreleased]: https://github.com/keyurpatel446/Monolith/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/keyurpatel446/Monolith/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/keyurpatel446/Monolith/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/keyurpatel446/Monolith/releases/tag/v0.1.0
