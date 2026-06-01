@@ -6,6 +6,10 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Fixed
+- CLI no longer prints a `BrokenPipeError` traceback when its output is piped
+  into a consumer that closes early (e.g. `monolith shrink … | head`).
+
 ## [0.1.3] - 2026-06-01
 
 ### Added

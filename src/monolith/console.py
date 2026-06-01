@@ -24,6 +24,8 @@ point declared in ``pyproject.toml``.
 from __future__ import annotations
 
 import argparse
+import os
+import signal
 import sys
 from typing import List, Sequence
 
@@ -559,12 +561,32 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Sequence[str] | None = None) -> int:
     """Console-script entry point. Returns a process exit code."""
+    # Behave like a normal Unix tool when piped into a consumer that closes
+    # early (e.g. `monolith shrink … | head`): terminate quietly on SIGPIPE
+    # instead of dumping a BrokenPipeError traceback. Guarded for platforms
+    # (Windows) and contexts (non-main thread) where SIGPIPE isn't settable.
+    try:
+        signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+    except (AttributeError, ValueError):
+        pass
+
     parser = build_parser()
     args = parser.parse_args(argv)
     if not getattr(args, "command", None):
         parser.print_help()
         return 0
-    return args.func(args)
+
+    try:
+        return args.func(args)
+    except BrokenPipeError:
+        # The reader went away. Send any buffered output to devnull so the
+        # final flush at interpreter shutdown doesn't re-raise, then exit 0.
+        try:
+            devnull = os.open(os.devnull, os.O_WRONLY)
+            os.dup2(devnull, sys.stdout.fileno())
+        except OSError:
+            pass
+        return 0
 
 
 if __name__ == "__main__":
