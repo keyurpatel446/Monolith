@@ -6,6 +6,13 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-06-01
+
+### Fixed
+- CLI no longer prints a `BrokenPipeError` traceback when its output is piped
+  into a consumer that closes early (e.g. `monolith shrink … | head`). (The fix
+  missed the v0.1.3 tag due to a merge-ordering race; this release carries it.)
+
 ## [0.1.3] - 2026-06-01
 
 ### Added
@@ -61,7 +68,8 @@ All notable changes to this project are documented here. The format is based on
 - CI with test matrix (Python 3.9/3.11/3.12) and auto-tagging on merge to
   `master`.
 
-[Unreleased]: https://github.com/keyurpatel446/Monolith/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/keyurpatel446/Monolith/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/keyurpatel446/Monolith/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/keyurpatel446/Monolith/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/keyurpatel446/Monolith/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/keyurpatel446/Monolith/compare/v0.1.0...v0.1.1
