@@ -58,16 +58,20 @@ and a resource hub (inspired by
 
 ## 📦 Install
 
-Requires Python ≥ 3.9. No third-party dependencies.
+Requires Python ≥ 3.9. Dependency-free core.
 
 ```bash
-# from a clone of this repo
-pip install -e .
-# or run without installing
-PYTHONPATH=src python -m monolith --help
+pipx install monolith-ai      # recommended (isolated)
+# or
+pip install monolith-ai
 ```
 
-Optional exact token counts in benchmarks: `pip install -e ".[bench]"` (adds `tiktoken`).
+From source (current default until the first PyPI release is published):
+
+```bash
+git clone https://github.com/keyurpatel446/Monolith && cd Monolith
+pip install -e .              # or: pip install -e ".[bench]" for exact token counts
+```
 
 ## 🚀 Quickstart
 
@@ -163,7 +167,8 @@ root `TASKS.md` your agents read as ordinary project context.
 - [Usage guide](docs/USAGE.md)
 - Per-agent setup: [Claude Code](docs/agents/claude-code.md) ·
   [Codex](docs/agents/codex.md) · [Copilot](docs/agents/copilot.md)
-- [Roadmap](ROADMAP.md)
+- [Roadmap](ROADMAP.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
+- Demo: run `bash scripts/demo.sh` (record with asciinema)
 
 ## 🌱 Development & branching
 

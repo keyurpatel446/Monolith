@@ -1,0 +1,35 @@
+name: Publish to PyPI
+
+# Fires when CI tags a release (the tag job in ci.yml pushes vX.Y.Z on merge to
+# master). Builds the sdist + wheel and uploads them to PyPI.
+#
+# Setup required once by the maintainer:
+#   1. Confirm the project name in pyproject.toml is available/owned on PyPI.
+#   2. EITHER add a `PYPI_API_TOKEN` repo secret (token auth, used below),
+#      OR switch to PyPI Trusted Publishing (OIDC) and remove the `password:`
+#      line — see https://docs.pypi.org/trusted-publishers/.
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  publish:
+    name: Build and publish
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # enables Trusted Publishing if you choose that route
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Build distributions
+        run: |
+          python -m pip install --upgrade build
+          python -m build
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # Remove this line to use Trusted Publishing (OIDC) instead of a token.
+          password: ${{ secrets.PYPI_API_TOKEN }}
