@@ -152,6 +152,7 @@ root `TASKS.md` your agents read as ordinary project context.
 - Per-agent setup: [Claude Code](docs/agents/claude-code.md) ·
   [Codex](docs/agents/codex.md) · [Copilot](docs/agents/copilot.md)
 - [Roadmap](ROADMAP.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
+- [Security](SECURITY.md) · [Publishing](docs/PUBLISHING.md)
 - Demo: run `bash scripts/demo.sh` (record with asciinema)
 
 ## 🌱 Development & branching

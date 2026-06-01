@@ -12,6 +12,15 @@ class HubTests(unittest.TestCase):
         ids = [r.id for r in CATALOG]
         self.assertEqual(len(ids), len(set(ids)))
 
+    def test_catalog_has_expected_resources(self):
+        ids = {r.id for r in CATALOG}
+        for expected in ("concise-commit", "terse-review", "test-plan", "explain-diff"):
+            self.assertIn(expected, ids)
+        # Every resource ships a non-empty body and at least one install target.
+        for resource in CATALOG:
+            self.assertTrue(resource.body.strip())
+            self.assertTrue(resource.targets)
+
     def test_find_and_search(self):
         self.assertIsNotNone(find("concise-commit"))
         self.assertIsNone(find("does-not-exist"))

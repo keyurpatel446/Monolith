@@ -72,6 +72,28 @@ Codex, and GitHub Copilot. This document is the living plan.
 - Handlers are unit-tested; the live stdio loop is marked experimental pending
   validation against more MCP clients.
 
+## v0.2.0 (planned)
+
+Post-1.0-readiness work, roughly in priority order:
+
+- **Richer tasks** — cross-file/existing-task dependencies in `scan` (reference
+  tasks by id, not just same-batch slugs); `task` subcommands to add/remove/edit
+  and reorder; show blocked tasks in `tasks`.
+- **More `scan` tag types** — `@monolith:ignore` (exclude a file from `shrink`),
+  `@monolith:todo` aliasing `task`, and a `--strip` option to remove tags after
+  applying.
+- **Hub depth** — more curated resources, an `--update` flag to refresh
+  installed assets, and an optional signed/remote manifest for community assets.
+- **Measurement** — per-tier benchmark corpora so `bench`/`stats` report a
+  measured number per tier, not just `full`.
+- **MCP hardening** — validate the stdio server against real MCP clients; add an
+  `apply`/`tasks` read tool alongside `shrink`.
+- **Distribution & brand** — first PyPI release via Trusted Publishing (see
+  `docs/PUBLISHING.md`), a recorded demo GIF in the README, and a
+  social-preview image (1280×640: 🧱 logo + tagline + before/after numbers).
+- **Docs site** — publish `docs/` via GitHub Pages and set it as the repo
+  website.
+
 ## Design principles
 
 1. **Author once, compile everywhere.** One source of truth per concern.
