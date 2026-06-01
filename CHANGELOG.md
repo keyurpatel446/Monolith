@@ -6,6 +6,14 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Fixed
+- `--version` now reads from installed package metadata (single-sourced), fixing
+  a drift where it reported the previous version.
+
+### Added
+- Monolith now manages its own repository (dogfooding): generated `CLAUDE.md`,
+  `AGENTS.md`, and `.github/copilot-instructions.md`.
+
 ## [0.1.1] - 2026-06-01
 
 ### Added

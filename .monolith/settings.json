@@ -1,0 +1,9 @@
+{
+  "tier": "full",
+  "agents": [
+    "claude",
+    "codex",
+    "copilot"
+  ],
+  "extra_rules": []
+}
