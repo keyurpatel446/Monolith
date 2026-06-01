@@ -7,8 +7,8 @@ All notable changes to this project are documented here. The format is based on
 ## [Unreleased]
 
 ### Added
-- `docs/COMPARISON.md` (feature matrix + "when to pick what" vs the four
-  inspiration projects) and `docs/ABOUT.md` (suggested GitHub About / topics).
+- `docs/CAPABILITIES.md` (Capability × Monolith table) and `docs/ABOUT.md`
+  (suggested GitHub About / topics).
 - Claude Code guide: install steps, installing hub commands as slash commands,
   and adding the `shrink` MCP server.
 
