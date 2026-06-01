@@ -52,15 +52,26 @@ Codex, and GitHub Copilot. This document is the living plan.
 - `monolith tasks` (list) and `monolith task <id> --status` (update).
 - Unit tests for parsing, nesting, dependencies, status, and rendering.
 
-### Phase 4 — Resource hub
-- Curated catalog of skills, slash-commands, hooks, and prompts.
-- `monolith hub search/install <name>` placing assets in the right agent path.
-- Versioned, signed manifest so installs are reproducible.
+### Phase 2.5 — Comparison harness ✅
+- `monolith compare` (`compare.py`): objective input-overhead measured for every
+  approach with one tokenizer, plus output reduction tagged `measured`
+  (Monolith corpus) vs `published` (caveman / token-efficient figures).
+- Deliberately conservative and provenance-tagged — no fabricated head-to-head.
 
-### Phase 5 — Runtime compression (MCP)
-- Optional middleware that shrinks tool-call outputs at runtime (caveman-style),
-  for agents that support MCP.
-- Opt-in per project; measured against the stats harness.
+### Phase 4 — Resource hub ✅
+- Curated, in-package catalog of cross-agent commands/prompts (`hub.py`).
+- `monolith hub list/search/show/install`, placing assets in each agent's path
+  (`.claude/commands/`, `.codex/prompts/`, `.github/prompts/`).
+- Reproducible (assets ship with the package; no network needed).
+- Future: signed/remote manifests for community-contributed assets.
+
+### Phase 5 — Runtime compression (MCP) ✅ (experimental)
+- `shrink.py`: deterministic, offline output compressor with lite/full/ultra
+  levels (whitespace, ANSI strip, identical-line folding, long-output clipping).
+- `monolith shrink` (file/stdin) and an experimental MCP server
+  (`mcp_server.py`, `monolith mcp`) exposing `shrink` over stdio JSON-RPC.
+- Handlers are unit-tested; the live stdio loop is marked experimental pending
+  validation against more MCP clients.
 
 ## Design principles
 

@@ -81,7 +81,35 @@ monolith stats                # projected savings + one-time input cost
 | `monolith tasks [--emit]` | List the task tree; `--emit` re-writes `TASKS.md`. |
 | `monolith task <id> --status todo\|doing\|done` | Update a task's status (warns on unmet dependencies). |
 
+**Resource hub & runtime**
+
+| Command | Description |
+|---------|-------------|
+| `monolith hub list\|search <q>\|show <id>\|install <id> [--agent]` | Browse and install curated agent resources. |
+| `monolith shrink [file] [--level lite\|full\|ultra]` | Compress verbose output (stdin or file) deterministically. |
+| `monolith mcp` | Run the experimental MCP server exposing `shrink` over stdio. |
+| `monolith compare` | Compare Monolith vs caveman / token-efficient (with provenance). |
+
 Global flag `--root <dir>` runs against another project directory.
+
+## How does it compare to caveman / token-efficient?
+
+Run `monolith compare` for a provenance-tagged table. Honest summary:
+
+| Approach | Input overhead* | Output reduction |
+|----------|-----------------|------------------|
+| Normal (no tool) | 0 | 0% (baseline) |
+| claude-token-efficient | low | ~63% (their published figure) |
+| caveman | low | ~65% avg (their published figure) |
+| **Monolith** (full tier) | higher (more rules) | **80% measured** on its corpus |
+
+\* Input overhead is measured here for every approach with the same tokenizer.
+Output reduction marked "measured" is Monolith's own corpus; the others are each
+project's **published** number. This is **not** a single-model head-to-head
+(impossible offline), so treat the three as comparable (~60–80%) rather than
+ranking them by a few points. Monolith's real edge is breadth — one cross-agent
+tool that also does tasks, a resource hub, and runtime `shrink` — not a higher
+compression percentage.
 
 ## Measuring savings
 

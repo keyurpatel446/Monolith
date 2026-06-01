@@ -91,6 +91,34 @@ Lists the current task tree with status and dependencies. `--emit` re-writes
 Updates one task's status, re-saves the store, and re-emits `TASKS.md`. Warns
 (without blocking) if you advance a task whose dependencies are not yet `done`.
 
+### `monolith compare`
+Prints a provenance-tagged comparison of Monolith against caveman and
+claude-token-efficient. **Input overhead** is measured here for every approach
+with the same tokenizer (objective). **Output reduction** is labeled `measured`
+for Monolith's corpus and `published` for the other projects' own figures — it
+is not a single-model head-to-head, which is impossible offline.
+
+### `monolith hub list | search <q> | show <id> | install <id> [--agent]`
+Browse and install curated, token-frugal agent resources (slash commands and
+prompts) that ship inside Monolith. `install` writes the asset into each target
+agent's conventional path (e.g. `.claude/commands/`, `.codex/prompts/`,
+`.github/prompts/`); pass `--agent <key>` to install for one agent only.
+
+### `monolith shrink [file] [--level lite|full|ultra]`
+Compresses verbose text/output deterministically (no model). Reads a file or
+stdin, writes the compressed text to **stdout** and the savings to **stderr**
+(so it pipes cleanly). Levels: `lite` (whitespace), `full` (+ ANSI strip and
+fold identical lines), `ultra` (+ clip very long output with a marker).
+
+```bash
+pytest -q 2>&1 | monolith shrink --level full > short.log
+```
+
+### `monolith mcp`
+Runs the **experimental** MCP server over stdio (newline-delimited JSON-RPC),
+exposing a single `shrink` tool so an MCP-capable agent can compress tool output
+at runtime. The request handlers are unit-tested; the live loop is experimental.
+
 ### `monolith doctor`
 Checks each configured agent's file for a healthy Monolith block and reports
 `ok`/`FAIL` per agent. Exit code is non-zero if any agent is missing the block.

@@ -7,10 +7,14 @@ Sub-commands
     tier      show or switch the active compression tier
     stats     show projected + last-measured token savings for the active tier
     bench     run the benchmark corpus and record measured token reduction
+    compare   compare Monolith against caveman / token-efficient
     rules     list / add / remove custom directives (extra_rules)
     plan      parse a PRD/Markdown file into a task tree (writes TASKS.md)
     tasks     list the task tree (optionally re-emit TASKS.md)
     task      update a single task's status
+    hub       browse and install curated agent resources
+    shrink    compress verbose text/output deterministically
+    mcp       run the experimental MCP server (shrink tool over stdio)
     doctor    verify each configured agent picked up the Monolith block
 
 The module exposes :func:`main`, which is the ``monolith`` console-script entry
@@ -26,7 +30,11 @@ from typing import List, Sequence
 from monolith import __version__
 from monolith.adapters import all_keys, get_compiler
 from monolith.benchmark import load_last_report, run_benchmark, save_report
+from monolith.compare import run_comparison
 from monolith.compression import DEFAULT_TIER, get_tier, tier_names
+from monolith import hub as hub_module
+from monolith.mcp_server import serve as mcp_serve
+from monolith.shrink import DEFAULT_LEVEL, LEVELS, shrink
 from monolith.settings import (
     default_settings,
     extra_rules,
@@ -216,6 +224,25 @@ def cmd_bench(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_compare(args: argparse.Namespace) -> int:
+    """Compare Monolith against caveman / token-efficient, with provenance."""
+    report = run_comparison()
+    print(f"Monolith comparison ({report.counter})\n")
+    print(f"  {'approach':<24} {'input overhead':>14} {'output reduction':>18}")
+    print(f"  {'-' * 24} {'-' * 14:>14} {'-' * 18:>18}")
+    for result in report.results:
+        tag = "measured" if result.measured else "published"
+        print(
+            f"  {result.label:<24} {result.input_overhead_tokens:>10} tok "
+            f"{result.output_reduction * 100:>13.0f}% ({tag})"
+        )
+    print("\n  Input overhead is measured here for every approach (same counter).")
+    print("  Output reduction: 'measured' = Monolith's corpus; 'published' = the")
+    print("  other project's own reported figure (see their READMEs). This is not")
+    print("  a single-model head-to-head, which is not possible offline.")
+    return 0
+
+
 def cmd_rules(args: argparse.Namespace) -> int:
     """List, add, or remove custom directives stored in settings."""
     root = args.root
@@ -324,6 +351,84 @@ def cmd_task(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_hub(args: argparse.Namespace) -> int:
+    """Browse and install curated agent resources."""
+    if args.action == "list":
+        print("Resource hub:")
+        for resource in hub_module.CATALOG:
+            print(f"  {resource.id:<16} [{resource.kind}] {resource.summary}")
+        return 0
+
+    if args.action == "search":
+        if not args.value:
+            print("error: `hub search` needs a query", file=sys.stderr)
+            return 1
+        matches = hub_module.search(args.value)
+        if not matches:
+            print(f"No resources match {args.value!r}.")
+            return 0
+        for resource in matches:
+            print(f"  {resource.id:<16} [{resource.kind}] {resource.summary}")
+        return 0
+
+    if args.action == "show":
+        resource = hub_module.find(args.value or "")
+        if resource is None:
+            print(f"error: no resource with id {args.value!r}", file=sys.stderr)
+            return 1
+        print(f"{resource.id}  [{resource.kind}]")
+        print(f"  {resource.summary}")
+        print(f"  agents: {', '.join(resource.agents())}")
+        print("\n--- body ---")
+        print(resource.body)
+        return 0
+
+    # action == "install"
+    resource = hub_module.find(args.value or "")
+    if resource is None:
+        print(f"error: no resource with id {args.value!r}", file=sys.stderr)
+        return 1
+    agents = resource.agents() if args.agent in (None, "all") else [args.agent]
+    written = hub_module.install(resource, args.root, agents)
+    if not written:
+        print(f"Nothing installed (resource has no target for: {args.agent}).")
+        return 1
+    print(f"Installed '{resource.id}':")
+    for path in written:
+        print(f"  + {path}")
+    return 0
+
+
+def cmd_shrink(args: argparse.Namespace) -> int:
+    """Compress text from a file or stdin; write result to stdout, stats to stderr."""
+    if args.path:
+        try:
+            with open(args.path, "r", encoding="utf-8") as handle:
+                text = handle.read()
+        except OSError as exc:
+            print(f"error: cannot read {args.path}: {exc}", file=sys.stderr)
+            return 1
+    else:
+        text = sys.stdin.read()
+
+    result = shrink(text, args.level)
+    sys.stdout.write(result.text)
+    if result.text and not result.text.endswith("\n"):
+        sys.stdout.write("\n")
+    # Stats on stderr so the compressed text can be piped cleanly.
+    print(
+        f"shrink[{args.level}]: {result.before_tokens} -> {result.after_tokens} tokens "
+        f"({result.reduction * 100:.0f}% reduction)",
+        file=sys.stderr,
+    )
+    return 0
+
+
+def cmd_mcp(args: argparse.Namespace) -> int:
+    """Run the experimental MCP server (shrink tool) over stdio."""
+    return mcp_serve()
+
+
 def cmd_doctor(args: argparse.Namespace) -> int:
     """Verify every configured agent has a healthy Monolith block."""
     root = args.root
@@ -392,6 +497,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_bench = sub.add_parser("bench", help="run the benchmark corpus, record results")
     p_bench.set_defaults(func=cmd_bench)
 
+    p_compare = sub.add_parser("compare", help="compare vs caveman / token-efficient")
+    p_compare.set_defaults(func=cmd_compare)
+
     p_rules = sub.add_parser("rules", help="list/add/remove custom directives")
     p_rules.add_argument("action", choices=["list", "add", "remove"])
     p_rules.add_argument(
@@ -412,6 +520,27 @@ def build_parser() -> argparse.ArgumentParser:
     p_task.add_argument("id", help="task id, e.g. T3")
     p_task.add_argument("--status", required=True, choices=STATUSES, help="new status")
     p_task.set_defaults(func=cmd_task)
+
+    p_hub = sub.add_parser("hub", help="browse and install curated agent resources")
+    p_hub.add_argument("action", choices=["list", "search", "show", "install"])
+    p_hub.add_argument("value", nargs="?", help="query (search) or resource id (show/install)")
+    p_hub.add_argument(
+        "--agent",
+        choices=all_keys() + ["all"],
+        default="all",
+        help="target agent for install (default: all the resource supports)",
+    )
+    p_hub.set_defaults(func=cmd_hub)
+
+    p_shrink = sub.add_parser("shrink", help="compress verbose text/output")
+    p_shrink.add_argument("path", nargs="?", help="file to compress (default: stdin)")
+    p_shrink.add_argument(
+        "--level", choices=LEVELS, default=DEFAULT_LEVEL, help="compression level"
+    )
+    p_shrink.set_defaults(func=cmd_shrink)
+
+    p_mcp = sub.add_parser("mcp", help="run the experimental MCP server (stdio)")
+    p_mcp.set_defaults(func=cmd_mcp)
 
     p_doctor = sub.add_parser("doctor", help="verify agent configs are set up")
     p_doctor.set_defaults(func=cmd_doctor)

@@ -140,5 +140,37 @@ class Phase3Tests(unittest.TestCase):
             self.assertIn("done):", out)
 
 
+class Phase45Tests(unittest.TestCase):
+    def test_compare_lists_approaches(self):
+        code, out = run(["compare"])
+        self.assertEqual(code, 0)
+        self.assertIn("caveman", out)
+        self.assertIn("Monolith", out)
+
+    def test_hub_list_and_install(self):
+        with tempfile.TemporaryDirectory() as root:
+            code, out = run(["hub", "list"])
+            self.assertEqual(code, 0)
+            self.assertIn("concise-commit", out)
+            code, _ = run(["--root", root, "hub", "install", "concise-commit", "--agent", "claude"])
+            self.assertEqual(code, 0)
+            self.assertTrue(
+                os.path.exists(os.path.join(root, ".claude", "commands", "concise-commit.md"))
+            )
+
+    def test_hub_install_unknown_resource_errors(self):
+        with tempfile.TemporaryDirectory() as root:
+            self.assertEqual(run(["--root", root, "hub", "install", "nope"])[0], 1)
+
+    def test_shrink_file_reduces_tokens(self):
+        with tempfile.TemporaryDirectory() as root:
+            path = os.path.join(root, "log.txt")
+            with open(path, "w", encoding="utf-8") as fh:
+                fh.write("hit\n" * 10 + "\n\n\n\ndone\n")
+            code, out = run(["shrink", path, "--level", "full"])
+            self.assertEqual(code, 0)
+            self.assertIn("(x10)", out)
+
+
 if __name__ == "__main__":
     unittest.main()
