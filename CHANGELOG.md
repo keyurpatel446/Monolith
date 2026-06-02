@@ -6,6 +6,17 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.1.9] - 2026-06-02
+
+### Fixed
+- **Packaging**: use PEP 639 SPDX license metadata (`license = "MIT"` +
+  `license-files`); the built sdist/wheel now pass `twine check` and are valid
+  for PyPI.
+- **Publishing actually triggers**: moved PyPI publish into the `release` job of
+  `ci.yml`. A tag pushed by `GITHUB_TOKEN` does not trigger separate workflows,
+  so the old `publish.yml` never ran; publishing now happens in the job that
+  creates the tag. Removed `publish.yml`.
+
 ## [0.1.8] - 2026-06-01
 
 ### Changed
@@ -105,7 +116,8 @@ All notable changes to this project are documented here. The format is based on
 - CI with test matrix (Python 3.9/3.11/3.12) and auto-tagging on merge to
   `master`.
 
-[Unreleased]: https://github.com/keyurpatel446/Monolith/compare/v0.1.8...HEAD
+[Unreleased]: https://github.com/keyurpatel446/Monolith/compare/v0.1.9...HEAD
+[0.1.9]: https://github.com/keyurpatel446/Monolith/compare/v0.1.8...v0.1.9
 [0.1.8]: https://github.com/keyurpatel446/Monolith/compare/v0.1.7...v0.1.8
 [0.1.7]: https://github.com/keyurpatel446/Monolith/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/keyurpatel446/Monolith/compare/v0.1.5...v0.1.6

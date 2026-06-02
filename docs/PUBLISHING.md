@@ -1,8 +1,13 @@
 # Publishing to PyPI
 
 Monolith publishes via **PyPI Trusted Publishing (OIDC)** — no long-lived API
-token is stored in the repo. The workflow is `.github/workflows/publish.yml`; it
-runs on every `v*` tag (which CI creates on merge to `master`).
+token is stored in the repo. Publishing happens in the **`release` job of
+`.github/workflows/ci.yml`** (not a separate workflow): when a merge to `master`
+creates a new `vX.Y.Z` tag, the same job builds and uploads to PyPI.
+
+> Why it lives in `ci.yml`: a tag pushed by the default `GITHUB_TOKEN` does **not**
+> trigger other workflows, so a standalone tag-triggered publish workflow would
+> never run. Keeping build+publish in the job that creates the tag avoids that.
 
 ## One-time setup
 
@@ -25,7 +30,7 @@ runs on every `v*` tag (which CI creates on merge to `master`).
    | PyPI Project Name | `monolith-ai` |
    | Owner | `keyurpatel446` |
    | Repository name | `Monolith` |
-   | Workflow name | `publish.yml` |
+   | Workflow name | `ci.yml` |
    | Environment name | `pypi` |
 
 That's it — no secrets. The next tag triggers a build and upload.
