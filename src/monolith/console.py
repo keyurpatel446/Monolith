@@ -2,22 +2,27 @@
 
 Sub-commands
 ------------
-    init      detect agents in the repo and create .monolith/settings.json
-    apply     compile the directives into each agent's native config file
-    tier      show or switch the active compression tier
-    stats     show projected + last-measured token savings for the active tier
-    bench     run the benchmark corpus and record measured token reduction
-    rules     list / add / remove custom directives (extra_rules)
-    scan      scan the repo for @monolith: tags and apply them
-    plan      parse a PRD/Markdown file into a task tree (writes TASKS.md)
-    tasks     list the task tree (optionally re-emit TASKS.md)
-    task      update a single task's status
-    hub       browse and install curated agent resources
-    shrink    compress verbose text/output deterministically
-    run       run a command and compress its output (tee full output on failure)
-    gain      show cumulative token savings from `run`
-    mcp       run the experimental MCP server (shrink tool over stdio)
-    doctor    verify each configured agent picked up the Monolith block
+    init            detect agents in the repo and create .monolith/settings.json
+    apply           compile the directives into each agent's native config file
+    tier            show or switch the active compression tier
+    stats           show projected + last-measured token savings for the active tier
+    bench           run the benchmark corpus and record measured token reduction
+    rules           list / add / remove custom directives (extra_rules)
+    scan            scan the repo for @monolith: tags and apply them
+    constitution    scaffold .monolith/memory/constitution.md
+    specify         scaffold specs/<feature>/ artifact files
+    analyze         validate cross-artifact consistency for a feature
+    checklist       generate a quality checklist for a feature
+    plan            parse a PRD/Markdown file into a task tree (writes TASKS.md)
+    tasks           list the task tree (optionally re-emit TASKS.md)
+    task            update a single task's status
+    tasks-to-issues push tasks to GitHub Issues via the API
+    hub             browse and install curated agent resources
+    shrink          compress verbose text/output deterministically
+    run             run a command and compress its output (tee full output on failure)
+    gain            show cumulative token savings from `run`
+    mcp             run the experimental MCP server (shrink tool over stdio)
+    doctor          verify each configured agent picked up the Monolith block
 
 The module exposes :func:`main`, which is the ``monolith`` console-script entry
 point declared in ``pyproject.toml``.
@@ -26,10 +31,13 @@ point declared in ``pyproject.toml``.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import signal
 import subprocess
 import sys
+import urllib.error
+import urllib.request
 from typing import List, Sequence
 
 from monolith import __version__
@@ -600,6 +608,79 @@ def cmd_checklist(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_tasks_to_issues(args: argparse.Namespace) -> int:
+    """Push todo/doing tasks to GitHub Issues. Requires GITHUB_TOKEN env var."""
+    token = os.environ.get("GITHUB_TOKEN", "").strip()
+    if not token:
+        print("error: GITHUB_TOKEN environment variable not set", file=sys.stderr)
+        print("  export GITHUB_TOKEN=<your-personal-access-token>", file=sys.stderr)
+        return 1
+
+    tasks = load_tasks(args.root)
+    if not tasks:
+        print("No tasks found. Run `monolith plan <prd>` first.")
+        return 0
+
+    target_statuses = {"todo", "doing"} if not args.done else {"todo", "doing", "done"}
+    to_push = [t for t in tasks if t.status in target_statuses]
+    if not to_push:
+        print("No tasks with status todo/doing to push.")
+        return 0
+
+    owner, _, repo = args.repo.partition("/")
+    if not owner or not repo:
+        print("error: --repo must be in owner/repo format", file=sys.stderr)
+        return 1
+
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "Content-Type": "application/json",
+    }
+
+    created = 0
+    errors = 0
+    for task in to_push:
+        body_parts = [f"Task `{task.id}` from Monolith task tree."]
+        if task.deps:
+            body_parts.append(f"\nDepends on: {', '.join(task.deps)}")
+        body_parts.append(f"\nStatus: `{task.status}`")
+        if args.spec_link:
+            body_parts.append(f"\nSpec: {args.spec_link}")
+
+        payload: dict = {
+            "title": task.title,
+            "body": "\n".join(body_parts),
+        }
+        if args.label:
+            payload["labels"] = [args.label]
+
+        data = json.dumps(payload).encode()
+        req = urllib.request.Request(
+            f"https://api.github.com/repos/{owner}/{repo}/issues",
+            data=data,
+            headers=headers,
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req) as resp:
+                result = json.loads(resp.read())
+            print(f"  + #{result['number']}  {task.id}: {task.title}")
+            print(f"    {result['html_url']}")
+            created += 1
+        except urllib.error.HTTPError as exc:
+            detail = exc.read().decode(errors="replace")
+            print(f"  error: {task.id} — HTTP {exc.code}: {detail}", file=sys.stderr)
+            errors += 1
+
+    print(f"\n{created} issue(s) created", end="")
+    if errors:
+        print(f", {errors} error(s)", end="")
+    print(".")
+    return 1 if errors else 0
+
+
 def cmd_mcp(args: argparse.Namespace) -> int:
     """Run the experimental MCP server (shrink tool) over stdio."""
     return mcp_serve()
@@ -737,6 +818,27 @@ def build_parser() -> argparse.ArgumentParser:
     p_task.add_argument("id", help="task id, e.g. T3")
     p_task.add_argument("--status", required=True, choices=STATUSES, help="new status")
     p_task.set_defaults(func=cmd_task)
+
+    p_t2i = sub.add_parser(
+        "tasks-to-issues", help="push tasks to GitHub Issues (requires GITHUB_TOKEN)"
+    )
+    p_t2i.add_argument(
+        "--repo", required=True, metavar="OWNER/REPO",
+        help="target repository, e.g. acme/my-project",
+    )
+    p_t2i.add_argument(
+        "--label", default="", metavar="LABEL",
+        help="label to attach to every created issue (must already exist in the repo)",
+    )
+    p_t2i.add_argument(
+        "--done", action="store_true",
+        help="also push tasks with status 'done' (default: only todo and doing)",
+    )
+    p_t2i.add_argument(
+        "--spec-link", dest="spec_link", default="", metavar="URL",
+        help="URL to append to every issue body (e.g. link to the spec file)",
+    )
+    p_t2i.set_defaults(func=cmd_tasks_to_issues)
 
     p_hub = sub.add_parser("hub", help="browse and install curated agent resources")
     p_hub.add_argument("action", choices=["list", "search", "show", "install"])

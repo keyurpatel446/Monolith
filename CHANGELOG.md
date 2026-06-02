@@ -6,6 +6,22 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-06-02
+
+### Added
+- **4 new agent adapters**: Cursor (`.cursorrules`), Windsurf (`.windsurfrules`),
+  Gemini CLI (`GEMINI.md`), Aider (`CONVENTIONS.md`). `monolith apply --agent all`
+  now writes 7 agent files from one ruleset.
+- **`monolith tasks-to-issues --repo owner/repo`**: push todo/doing tasks to
+  GitHub Issues via the GitHub API. Stdlib-only (no new deps); requires
+  `GITHUB_TOKEN`. Options: `--label`, `--done`, `--spec-link`.
+- Hub install paths extended to cover Cursor (`.cursor/rules/*.mdc`), Windsurf
+  (`.windsurf/rules/`), Gemini (`.gemini/commands/`), and Aider
+  (`.aider/instructions/`).
+- **SEO**: expanded `pyproject.toml` keywords and description; added
+  `Changelog`, `Documentation`, and `Bug Tracker` URLs; README agent table and
+  keyword footer updated to cover all 7 agents.
+
 ## [0.2.0] - 2026-06-02
 
 ### Added
@@ -144,7 +160,8 @@ All notable changes to this project are documented here. The format is based on
 - CI with test matrix (Python 3.9/3.11/3.12) and auto-tagging on merge to
   `master`.
 
-[Unreleased]: https://github.com/keyurpatel446/Monolith/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/keyurpatel446/Monolith/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/keyurpatel446/Monolith/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/keyurpatel446/Monolith/compare/v0.1.9...v0.2.0
 [0.1.9]: https://github.com/keyurpatel446/Monolith/compare/v0.1.8...v0.1.9
 [0.1.8]: https://github.com/keyurpatel446/Monolith/compare/v0.1.7...v0.1.8
