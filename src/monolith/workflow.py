@@ -321,13 +321,26 @@ def analyze_feature(root: str, feature: str) -> List[str]:
     # Required pipeline artifacts
     for name in PIPELINE_ARTIFACTS:
         s = _artifact_status(root, feature, name)
+
+        # tasks.md fallback: monolith plan writes to the project root TASKS.md,
+        # not specs/<feature>/tasks.md. Accept the root file as equivalent.
+        if not s.exists and name == "tasks.md":
+            root_tasks = os.path.join(root, "TASKS.md")
+            if os.path.exists(root_tasks):
+                s = ArtifactStatus(
+                    name="tasks.md (root TASKS.md)",
+                    exists=True,
+                    word_count=len(_read_file(root_tasks).split()),
+                    heading_count=len(_HEADING_RE.findall(_read_file(root_tasks))),
+                )
+
         if not s.exists:
             if name == "spec.md":
                 hint = f"run `monolith specify {feature}`"
             elif name == "plan.md":
                 hint = f"run `monolith plan <prd>` (or fill specs/{feature}/plan.md)"
             else:
-                hint = "run `monolith tasks` after plan"
+                hint = "run `monolith plan specs/{feature}/spec.md`"
             findings.append(f"ERROR  {name} missing — {hint}")
         elif s.unfilled:
             findings.append(f"WARN  {name} has unfilled template placeholders")
