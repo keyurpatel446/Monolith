@@ -9,8 +9,11 @@ from monolith.adapters.compiler import START, END
 
 
 class CompilerTests(unittest.TestCase):
-    def test_registry_has_all_three_agents(self):
-        self.assertEqual(set(all_keys()), {"claude", "codex", "copilot"})
+    def test_registry_has_all_agents(self):
+        self.assertEqual(
+            set(all_keys()),
+            {"claude", "codex", "copilot", "cursor", "windsurf", "gemini", "aider"},
+        )
 
     def test_render_contains_markers_and_override(self):
         block = get_compiler("claude").render("full")

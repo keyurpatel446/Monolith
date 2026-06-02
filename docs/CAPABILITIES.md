@@ -6,7 +6,7 @@ see the [usage guide](USAGE.md).
 | Capability | Monolith |
 |---|---|
 | Token-saving rules | ✅ one directive set, tiers `lite` / `full` / `ultra` |
-| Cross-agent output | ✅ compiles to `CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md` |
+| Cross-agent output | ✅ 7 agents: Claude Code, Codex, Copilot, Cursor, Windsurf, Gemini CLI, Aider |
 | Idempotent, non-destructive | ✅ edits only between markers; your own notes are preserved |
 | Measured savings | ✅ `bench` measures real reduction; `stats` shows projected + measured |
 | Custom rules | ✅ `rules list / add / remove` |

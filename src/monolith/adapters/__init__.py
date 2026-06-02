@@ -40,4 +40,12 @@ def all_keys() -> List[str]:
 
 # Import concrete compilers last so their @register decorators run. Listed
 # explicitly (rather than auto-discovered) to keep import order deterministic.
-from monolith.adapters import claude_code, openai_codex, github_copilot  # noqa: E402,F401
+from monolith.adapters import (  # noqa: E402,F401
+    claude_code,
+    openai_codex,
+    github_copilot,
+    cursor,
+    windsurf,
+    gemini,
+    aider,
+)
