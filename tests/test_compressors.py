@@ -58,5 +58,80 @@ class CompressorTests(unittest.TestCase):
         self.assertEqual(out, "a\n\nb")
 
 
+class LintCompressorTests(unittest.TestCase):
+    ESLINT = "\n".join([
+        "/src/app.js",
+        "  12:5  error    'x' is assigned a value but never used  no-unused-vars",
+        "  40:1  warning  Unexpected console statement              no-console",
+        "",
+        "/src/util.js",
+        "  3:10  error    Missing semicolon                         semi",
+        "",
+        "✖ 3 problems (2 errors, 1 warning)",
+    ])
+
+    def test_detects_lint_commands(self):
+        self.assertIsNotNone(pick(["eslint", "."]))
+        self.assertIsNotNone(pick(["tsc", "--noEmit"]))
+        self.assertIsNotNone(pick(["npm", "run", "lint"]))
+
+    def test_keeps_diagnostics_and_summary(self):
+        out, kind = compress_for(["eslint", "."], self.ESLINT)
+        self.assertEqual(kind, "lint")
+        self.assertIn("no-unused-vars", out)
+        self.assertIn("3 problems", out)
+        self.assertNotIn("\n\n", out)  # blank lines dropped
+
+
+class GitStatusCompressorTests(unittest.TestCase):
+    STATUS = "\n".join([
+        "On branch main",
+        "Your branch is up to date with 'origin/main'.",
+        "",
+        "Changes not staged for commit:",
+        '  (use "git add <file>..." to update what will be committed)',
+        '  (use "git restore <file>..." to discard changes in working directory)',
+        "\tmodified:   src/app.py",
+        "",
+        "Untracked files:",
+        '  (use "git add <file>..." to include in what will be committed)',
+        "\tnotes.md",
+    ])
+
+    def test_drops_hint_and_blank_lines(self):
+        out, kind = compress_for(["git", "status"], self.STATUS)
+        self.assertEqual(kind, "git-status")
+        self.assertIn("modified:   src/app.py", out)
+        self.assertIn("On branch main", out)
+        self.assertNotIn("(use ", out)
+        self.assertNotIn("\n\n", out)
+
+
+class GrepFindCompressorTests(unittest.TestCase):
+    def test_grep_groups_by_file_and_shrinks(self):
+        # Many matches in one file -> grouping drops the repeated path prefix.
+        grep = "\n".join(
+            f"src/very/long/path/app.py:{i}:import something_{i}" for i in range(12)
+        )
+        out, kind = compress_for(["grep", "-rn", "import", "."], grep)
+        self.assertEqual(kind, "grep/find")
+        self.assertIn("src/very/long/path/app.py (12):", out)
+        self.assertLess(len(out), len(grep))
+
+    def test_find_groups_by_directory_and_shrinks(self):
+        find = "\n".join(f"src/pkg/module_{i}.py" for i in range(10))
+        out, kind = compress_for(["find", ".", "-name", "*.py"], find)
+        self.assertEqual(kind, "grep/find")
+        self.assertIn("src/pkg/ (10)", out)
+        self.assertLess(len(out), len(find))
+
+    def test_grep_single_file_numeric_prefix_passes_through(self):
+        # `grep -n` on one file yields "line:text" with no filename to group by.
+        grep = "1:import os\n5:import sys"
+        out, kind = compress_for(["grep", "-n", "import", "f.py"], grep)
+        self.assertEqual(kind, "grep/find")
+        self.assertNotIn("(", out)  # not mis-grouped by line number
+
+
 if __name__ == "__main__":
     unittest.main()

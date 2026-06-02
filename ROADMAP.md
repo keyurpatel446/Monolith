@@ -76,11 +76,11 @@ Codex, and GitHub Copilot. This document is the living plan.
 - `monolith run -- <cmd>` (`runner.py`): run a command, compress its output,
   propagate its exit code, and on failure save full output to `.monolith/tee/`
   so the agent needn't re-run it.
-- Command-aware compression (`compressors.py`): a test-runner compressor keeps
-  only failures + summary (~90% on large runs); generic fallback otherwise.
+- Command-aware compression (`compressors.py`): semantic compressors for test
+  runners (~90%), linters/type-checkers, `git status`, and grep/find; generic
+  fallback otherwise.
 - `monolith gain`: cumulative token-savings ledger across `run` invocations.
-- Next (v0.2): more per-command compressors (lint, build, grep/find, git) and
-  transparent shell-hook wrapping — see below.
+- Next (v0.2): build-tool compressors and transparent shell-hook wrapping.
 
 ## v0.2.0 (planned)
 
@@ -98,9 +98,10 @@ Post-1.0-readiness work, roughly in priority order:
   measured number per tier, not just `full`.
 - **MCP hardening** — validate the stdio server against real MCP clients; add an
   `apply`/`tasks` read tool alongside `shrink`.
-- **Command-aware compression** (rtk-style) — per-command compressors for `run`
-  (git status, test runners, grep/find, linters) using filter/group/truncate/
-  dedup, plus optional agent shell-hooks so commands are wrapped transparently.
+- **More command-aware compression** (rtk-style) — build-tool compressors
+  (webpack/next/cargo build, docker) and transparent agent shell-hooks so
+  commands are wrapped without typing `monolith run`. (Test/lint/git/grep/find
+  compressors shipped in 0.1.6–0.1.7.)
 - **Distribution & brand** — first PyPI release via Trusted Publishing (see
   `docs/PUBLISHING.md`), a recorded demo GIF in the README, and a
   social-preview image (1280×640: 🧱 logo + tagline + before/after numbers).
