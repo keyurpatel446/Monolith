@@ -6,6 +6,34 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-06-02
+
+### Added
+- **Full Spec-Driven Development (SDD) pipeline** — `constitution → specify →
+  clarify → plan → analyze → tasks → implement` — matching spec-kit's methodology,
+  delivered offline with zero new dependencies.
+- `monolith constitution` — scaffold `.monolith/memory/constitution.md` with
+  mission, principles, and definition of done.
+- `monolith specify <feature> [--plan] [--data-model] [--contracts]` — scaffold
+  `specs/<feature>/` with `spec.md`, `plan.md`, `data-model.md`, and
+  `contracts/README.md` from opinionated templates.
+- `monolith analyze [feature]` — structural cross-artifact consistency check
+  (spec ↔ plan ↔ tasks). Reports OK / WARN / ERROR / INFO per artifact; exits 1
+  on any ERROR. Runs all features when no name is given.
+- `monolith checklist <feature> [--write]` — generate a quality gate checklist
+  pre-populated from the feature's existing artifacts. `--write` saves
+  `specs/<feature>/checklist.md`.
+- New `workflow.py` module: `scaffold_*` helpers, `analyze_feature`, and
+  `generate_checklist` — all deterministic, offline, stdlib-only.
+- **6 new hub resources** installable as slash commands across Claude Code,
+  Codex, and Copilot:
+  - `monolith.constitution` — agent-guided governance setup
+  - `monolith.specify` — agent-guided requirements authoring
+  - `monolith.clarify` — ambiguity resolution before planning
+  - `monolith.analyze` — cross-artifact consistency review
+  - `monolith.checklist` — quality gate before shipping
+  - `monolith.implement` — dependency-ordered task execution
+
 ## [0.1.9] - 2026-06-02
 
 ### Fixed
@@ -116,7 +144,8 @@ All notable changes to this project are documented here. The format is based on
 - CI with test matrix (Python 3.9/3.11/3.12) and auto-tagging on merge to
   `master`.
 
-[Unreleased]: https://github.com/keyurpatel446/Monolith/compare/v0.1.9...HEAD
+[Unreleased]: https://github.com/keyurpatel446/Monolith/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/keyurpatel446/Monolith/compare/v0.1.9...v0.2.0
 [0.1.9]: https://github.com/keyurpatel446/Monolith/compare/v0.1.8...v0.1.9
 [0.1.8]: https://github.com/keyurpatel446/Monolith/compare/v0.1.7...v0.1.8
 [0.1.7]: https://github.com/keyurpatel446/Monolith/compare/v0.1.6...v0.1.7

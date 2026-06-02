@@ -1,13 +1,14 @@
 # Monolith Roadmap
 
-Monolith unifies four ideas — token efficiency, dense output, task management,
-and resource discovery — into one cross-agent tool for Claude Code, OpenAI
-Codex, and GitHub Copilot. This document is the living plan.
+Monolith unifies five ideas — token efficiency, dense output, spec-driven
+development, task management, and resource discovery — into one cross-agent tool
+for Claude Code, OpenAI Codex, and GitHub Copilot. This document is the living
+plan.
 
 ## Vision
 
-> Author your AI-workflow rules and assets **once**; let Monolith deliver them
-> in the native format every agent understands.
+> Author your rules and specs **once**; let Monolith compile them into every
+> agent's native format and guide the full path from idea to shipped code.
 
 ## Phases
 
@@ -71,33 +72,40 @@ Codex, and GitHub Copilot. This document is the living plan.
   runners (~90%), linters/type-checkers, `git status`, and grep/find; generic
   fallback otherwise.
 - `monolith gain`: cumulative token-savings ledger across `run` invocations.
-- Next (v0.2): build-tool compressors and transparent shell-hook wrapping.
 
-## v0.2.0 (planned)
+### Phase 6 — Spec-Driven Development pipeline ✅ (v0.2.0)
+- Full SDD workflow: `constitution → specify → clarify → plan → analyze →
+  tasks → implement`, matching spec-kit's methodology offline with zero new
+  dependencies.
+- `workflow.py`: scaffolds `specs/<feature>/` with `spec.md`, `plan.md`,
+  `data-model.md`, `contracts/`; `analyze_feature` (structural consistency
+  check, OK/WARN/ERROR/INFO); `generate_checklist` (auto-checks existing
+  artifacts).
+- 4 new CLI commands: `constitution`, `specify`, `analyze`, `checklist`.
+- 6 new hub resources installable as slash commands across all agents:
+  `monolith.constitution`, `monolith.specify`, `monolith.clarify`,
+  `monolith.analyze`, `monolith.checklist`, `monolith.implement`.
+- All 74 existing tests pass unchanged.
 
-Post-1.0-readiness work, roughly in priority order:
+## v0.3.0 (planned)
 
-- **Richer tasks** — cross-file/existing-task dependencies in `scan` (reference
-  tasks by id, not just same-batch slugs); `task` subcommands to add/remove/edit
-  and reorder; show blocked tasks in `tasks`.
-- **More `scan` tag types** — `@monolith:ignore` (exclude a file from `shrink`),
-  `@monolith:todo` aliasing `task`, and a `--strip` option to remove tags after
-  applying.
-- **Hub depth** — more curated resources, an `--update` flag to refresh
-  installed assets, and an optional signed/remote manifest for community assets.
+- **SDD depth** — battle-test spec/plan/tasks templates with real projects;
+  add `monolith specify --all` shorthand; improve `analyze` with semantic
+  heading-level coverage matching between spec and tasks.
+- **Richer tasks** — cross-file/existing-task dependencies in `scan`; `task`
+  subcommands to add/remove/edit; show blocked tasks in `tasks`.
+- **More `scan` tag types** — `@monolith:ignore`, `@monolith:todo`, `--strip`.
+- **Hub depth** — `--update` flag, optional signed/remote manifest for
+  community assets.
+- **MCP hardening** — validate the stdio server against real clients; add
+  `apply`/`tasks` read tools alongside `shrink`.
+- **More command-aware compression** — build-tool compressors (webpack/next/
+  cargo build, docker) and transparent shell hooks.
 - **Measurement** — per-tier benchmark corpora so `bench`/`stats` report a
-  measured number per tier, not just `full`.
-- **MCP hardening** — validate the stdio server against real MCP clients; add an
-  `apply`/`tasks` read tool alongside `shrink`.
-- **More command-aware compression** — build-tool compressors
-  (webpack/next/cargo build, docker) and transparent agent shell-hooks so
-  commands are wrapped without typing `monolith run`. (Test/lint/git/grep/find
-  compressors shipped in 0.1.6–0.1.7.)
-- **Distribution & brand** — first PyPI release via Trusted Publishing (see
-  `docs/PUBLISHING.md`), a recorded demo GIF in the README, and a
-  social-preview image (1280×640: 🧱 logo + tagline + before/after numbers).
-- **Docs site** — publish `docs/` via GitHub Pages and set it as the repo
-  website.
+  measured number for every tier.
+- **Distribution & brand** — first PyPI release via Trusted Publishing, a
+  recorded demo GIF in the README, and a social-preview image.
+- **Docs site** — publish `docs/` via GitHub Pages.
 
 ## Design principles
 
