@@ -44,6 +44,131 @@ def _paths(name: str, ext: str = "md") -> Dict[str, str]:
 
 
 CATALOG: List[Resource] = [
+    # -- SDD workflow commands -----------------------------------------------
+    Resource(
+        id="monolith.constitution",
+        kind="command",
+        summary="Establish project governance principles and definition of done.",
+        targets=_paths("monolith.constitution"),
+        body=(
+            "# monolith.constitution\n\n"
+            "Create or update the project constitution at `.monolith/memory/constitution.md`.\n\n"
+            "Steps:\n"
+            "1. Read the existing constitution if one exists.\n"
+            "2. Ask the user three questions:\n"
+            "   - What problem does this project solve and for whom?\n"
+            "   - What are the 3–7 non-negotiable engineering principles?\n"
+            "   - What is the definition of done for a task?\n"
+            "3. Write or update `.monolith/memory/constitution.md` with their answers.\n"
+            "4. Keep it under one page — this file is read on every task.\n\n"
+            "Stop after writing. Do NOT start any implementation.\n"
+        ),
+    ),
+    Resource(
+        id="monolith.specify",
+        kind="command",
+        summary="Define functional requirements and user stories for a feature.",
+        targets=_paths("monolith.specify"),
+        body=(
+            "# monolith.specify\n\n"
+            "Create `specs/<feature>/spec.md` for the feature the user names.\n\n"
+            "Steps:\n"
+            "1. Ask: what is the feature name? (or infer from context)\n"
+            "2. Read `.monolith/memory/constitution.md` if it exists.\n"
+            "3. Read any existing `specs/<feature>/spec.md`.\n"
+            "4. Fill in or update the spec with all of:\n"
+            "   - Problem Statement (one paragraph)\n"
+            "   - Goals (bullet list — what must be true when done)\n"
+            "   - Non-Goals (what we are NOT building)\n"
+            "   - User Stories (As a <role>, I want <action> so that <outcome>)\n"
+            "   - Functional Requirements (numbered, specific, testable)\n"
+            "   - Acceptance Criteria (checkbox list)\n"
+            "   - Open Questions (anything unresolved)\n"
+            "5. Stop. Do NOT plan or implement.\n"
+        ),
+    ),
+    Resource(
+        id="monolith.clarify",
+        kind="command",
+        summary="Surface and resolve ambiguities in a spec before planning.",
+        targets=_paths("monolith.clarify"),
+        body=(
+            "# monolith.clarify\n\n"
+            "Read the feature spec and surface every ambiguity that would block a correct plan.\n\n"
+            "Steps:\n"
+            "1. Ask: which feature? (or infer from context)\n"
+            "2. Read `specs/<feature>/spec.md`.\n"
+            "3. List every open question, ambiguity, or underspecified requirement.\n"
+            "   Format: `Q1: <question>` — one per line, no filler.\n"
+            "4. Wait for the user to answer each question.\n"
+            "5. Update `specs/<feature>/spec.md` with the resolved answers.\n"
+            "6. Confirm: 'Spec updated. Ready to plan.'\n\n"
+            "Do NOT start planning until all blockers are resolved.\n"
+        ),
+    ),
+    Resource(
+        id="monolith.analyze",
+        kind="command",
+        summary="Validate cross-artifact consistency: spec ↔ plan ↔ tasks.",
+        targets=_paths("monolith.analyze"),
+        body=(
+            "# monolith.analyze\n\n"
+            "Check that spec, plan, and tasks are internally consistent for a feature.\n\n"
+            "Steps:\n"
+            "1. Ask: which feature? (or infer from context)\n"
+            "2. Read `specs/<feature>/spec.md`, `plan.md`, `tasks.md`.\n"
+            "3. For each requirement in spec.md — is it addressed in plan.md?\n"
+            "4. For each plan component — does a task exist for it?\n"
+            "5. For each acceptance criterion — is there a task that satisfies it?\n"
+            "6. Report findings in three groups:\n"
+            "   COVERED:  requirement → plan section → task id\n"
+            "   GAP:      requirement with no plan or task coverage\n"
+            "   ORPHAN:   tasks or plan sections with no spec backing\n"
+            "7. If gaps exist, ask the user whether to fix spec, plan, or tasks.\n"
+        ),
+    ),
+    Resource(
+        id="monolith.checklist",
+        kind="command",
+        summary="Generate a quality gate checklist before shipping a feature.",
+        targets=_paths("monolith.checklist"),
+        body=(
+            "# monolith.checklist\n\n"
+            "Generate a quality checklist and confirm the feature is ready to ship.\n\n"
+            "Steps:\n"
+            "1. Ask: which feature? (or infer from context)\n"
+            "2. Read `specs/<feature>/spec.md` and `plan.md`.\n"
+            "3. Generate a checklist with four sections:\n"
+            "   Spec compliance   — one checkbox per acceptance criterion from spec.md.\n"
+            "   Implementation    — tests, lint, type-check, no TODOs.\n"
+            "   Cross-artifact    — spec ↔ plan ↔ tasks consistent.\n"
+            "   Review            — PR description, reviewer sign-off, CHANGELOG.\n"
+            "4. Print the checklist. Work through each unchecked item with the user.\n"
+            "5. Only declare 'Ready to ship' when every box is checked.\n"
+        ),
+    ),
+    Resource(
+        id="monolith.implement",
+        kind="command",
+        summary="Execute tasks from the spec in dependency order.",
+        targets=_paths("monolith.implement"),
+        body=(
+            "# monolith.implement\n\n"
+            "Implement the feature by executing its tasks in dependency order.\n\n"
+            "Pre-flight (read ALL of these before writing any code):\n"
+            "- `specs/<feature>/spec.md` — requirements and acceptance criteria.\n"
+            "- `specs/<feature>/plan.md` — architecture and component design.\n"
+            "- `specs/<feature>/tasks.md` or `TASKS.md` — ordered task list.\n"
+            "- `.monolith/memory/constitution.md` — non-negotiable principles.\n\n"
+            "Execution rules:\n"
+            "- Work tasks in dependency order (`@after:` deps must be done first).\n"
+            "- Mark each task `doing` before starting, `done` when tests pass.\n"
+            "- Run `monolith run -- <test-cmd>` after each task to catch regressions.\n"
+            "- If a task is blocked or unclear, stop and ask — do not guess.\n"
+            "- After all tasks: run `monolith analyze <feature>` to confirm alignment.\n"
+        ),
+    ),
+    # -- Utility commands ----------------------------------------------------
     Resource(
         id="concise-commit",
         kind="command",

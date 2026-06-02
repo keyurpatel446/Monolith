@@ -1,6 +1,6 @@
 # 🧱 Monolith
 
-> **One ruleset. Every agent. Fewer tokens.**
+> **One ruleset. Every agent. Spec to ship.**
 
 [![CI](https://github.com/keyurpatel446/Monolith/actions/workflows/ci.yml/badge.svg)](https://github.com/keyurpatel446/Monolith/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -8,20 +8,22 @@
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#-development--branching)
 [![Buy me a coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-PayPal-00457C?logo=paypal&logoColor=white)](https://paypal.me/keyurpatel446)
 
-**Reduce token usage across Claude Code, OpenAI Codex, and GitHub Copilot from one
-config.** Monolith is a small, dependency-free CLI that writes proven token-saving
-rules into the native instructions file each AI coding agent already reads — so
-you author the rules **once** and every agent obeys them:
+**Monolith is a dependency-free CLI that unifies three concerns for AI-assisted
+development:**
 
-| Agent | File Monolith generates |
-|-------|-------------------------|
+1. **Token efficiency** — compile one ruleset into Claude Code, OpenAI Codex,
+   and GitHub Copilot's native config files. ~55–70% fewer output tokens.
+2. **Spec-Driven Development** — a full `constitution → specify → clarify →
+   plan → analyze → tasks → implement` pipeline with structured
+   `specs/<feature>/` artifacts.
+3. **Runtime compression** — wrap any command with `monolith run` to compress
+   its output before the agent reads it.
+
+| Agent | File Monolith manages |
+|-------|-----------------------|
 | Claude Code | `CLAUDE.md` |
 | OpenAI Codex | `AGENTS.md` |
 | GitHub Copilot | `.github/copilot-instructions.md` |
-
-It also does **task management** (PRD → tracked tasks), ships a **resource hub**
-of installable agent commands, and can **`shrink`** verbose tool output at
-runtime — all from one tool.
 
 ---
 
@@ -41,17 +43,6 @@ Same answer. ~⅕ the tokens. (Measured by `monolith bench`.)
 
 ---
 
-## 🪄 Why
-
-Each agent reads instructions from a different file, so today you'd copy-paste
-the same rules into three places and keep them in sync by hand. Monolith keeps
-one canonical source and compiles it. Re-running is safe: managed content lives
-between markers and never clobbers your own notes in the same file.
-
-It unifies what used to take several separate tools into one cross-agent CLI:
-token-saving rules, dense-output tiers, task management, a resource hub, and
-runtime command-output compression.
-
 ## 📦 Install
 
 Requires Python ≥ 3.9. Dependency-free core.
@@ -62,38 +53,74 @@ pipx install monolith-ai      # recommended (isolated)
 pip install monolith-ai
 ```
 
-From source (current default until the first PyPI release is published):
+From source:
 
 ```bash
 git clone https://github.com/keyurpatel446/Monolith && cd Monolith
 pip install -e .              # or: pip install -e ".[bench]" for exact token counts
 ```
 
+---
+
 ## 🚀 Quickstart
+
+### Token efficiency (2 minutes)
 
 ```bash
 monolith init                 # detect agents, create .monolith/settings.json
 monolith apply --agent all    # write CLAUDE.md, AGENTS.md, copilot-instructions.md
 monolith doctor               # verify each agent picked up the rules
-monolith tier ultra --apply   # crank up compression
-monolith bench                # measure real token reduction on the sample corpus
+monolith stats                # see projected savings + input cost
 ```
+
+### Spec-Driven Development
+
+```bash
+monolith constitution                      # scaffold .monolith/memory/constitution.md
+monolith specify user-auth                 # scaffold specs/user-auth/spec.md
+monolith specify user-auth --plan \
+  --data-model --contracts                 # scaffold all artifacts at once
+monolith analyze user-auth                 # check spec ↔ plan ↔ tasks consistency
+monolith checklist user-auth               # quality gate before shipping
+```
+
+Install the SDD slash commands so any agent can run the workflow:
+
+```bash
+monolith hub install monolith.constitution
+monolith hub install monolith.specify
+monolith hub install monolith.clarify
+monolith hub install monolith.analyze
+monolith hub install monolith.checklist
+monolith hub install monolith.implement
+```
+
+---
 
 ## 🧰 What you get
 
-**Token efficiency**
+### Token efficiency
 
 | Command | Description |
 |---------|-------------|
 | `monolith init` | Detect agent files and create `.monolith/settings.json`. |
-| `monolith apply [--agent all\|claude\|codex\|copilot\|config]` | Compile the directives into agent configs (idempotent). |
+| `monolith apply [--agent all\|claude\|codex\|copilot\|config]` | Compile directives into agent configs (idempotent). |
 | `monolith tier [name] [--apply]` | Show or switch the active compression tier. |
-| `monolith stats` | Show projected reduction, last measured reduction, and the input cost of the block. |
-| `monolith bench` | Run the built-in benchmark corpus and record measured token reduction. |
+| `monolith stats` | Projected + measured reduction and input cost per file. |
+| `monolith bench` | Run the benchmark corpus and record measured token reduction. |
 | `monolith rules list\|add\|remove [value]` | Manage custom directives appended to every block. |
 | `monolith doctor` | Verify each configured agent has the Monolith block. |
 
-**Task management**
+### Spec-Driven Development (SDD)
+
+| Command | Description |
+|---------|-------------|
+| `monolith constitution` | Scaffold `.monolith/memory/constitution.md` — mission, principles, definition of done. |
+| `monolith specify <feature> [--plan] [--data-model] [--contracts]` | Scaffold `specs/<feature>/` with templated artifact files. |
+| `monolith analyze [feature]` | Structural cross-artifact check: spec ↔ plan ↔ tasks. Exits 1 on errors. |
+| `monolith checklist <feature> [--write]` | Generate a quality gate checklist pre-checked against existing artifacts. |
+
+### Task management
 
 | Command | Description |
 |---------|-------------|
@@ -101,18 +128,53 @@ monolith bench                # measure real token reduction on the sample corpu
 | `monolith tasks [--emit]` | List the task tree; `--emit` re-writes `TASKS.md`. |
 | `monolith task <id> --status todo\|doing\|done` | Update a task's status (warns on unmet dependencies). |
 
-**Resource hub & runtime**
+### Resource hub & runtime
 
 | Command | Description |
 |---------|-------------|
-| `monolith hub list\|search <q>\|show <id>\|install <id> [--agent]` | Browse and install curated agent resources. |
-| `monolith shrink [file] [--level lite\|full\|ultra]` | Compress verbose output (stdin or file) deterministically. |
-| `monolith run -- <command>` | Run a command, compress its output, save full output to disk on failure. |
+| `monolith hub list\|search\|show\|install` | Browse and install curated agent resources (SDD commands + utilities). |
+| `monolith shrink [file] [--level lite\|full\|ultra]` | Compress verbose output deterministically. |
+| `monolith run -- <command>` | Run a command, compress its output, save full output on failure. |
 | `monolith gain` | Show cumulative token savings from `run`. |
-| `monolith mcp` | Run the experimental MCP server exposing `shrink` over stdio. |
-| `monolith scan [--apply]` | Scan the repo for `@monolith:` task/rule tags and apply them. |
+| `monolith mcp` | Experimental MCP server exposing `shrink` over stdio. |
+| `monolith scan [--apply]` | Scan repo for `@monolith:` task/rule tags and apply them. |
 
 Global flag `--root <dir>` runs against another project directory.
+
+---
+
+## 🗺️ SDD pipeline
+
+Monolith ships a full Spec-Driven Development workflow as both CLI commands and
+installable slash commands (cross-agent via the hub).
+
+```
+constitution → specify → clarify → plan → analyze → tasks → implement
+```
+
+Each feature gets a structured folder:
+
+```
+specs/
+└── user-auth/
+    ├── spec.md          # requirements + user stories + acceptance criteria
+    ├── plan.md          # architecture + stack decisions + edge cases
+    ├── tasks.md         # actionable task breakdown with @after: deps
+    ├── data-model.md    # entity definitions + relationships
+    ├── checklist.md     # quality gate (auto-generated)
+    └── contracts/
+        └── README.md    # API contract convention + per-endpoint files
+```
+
+Every slash command (e.g. `/monolith.specify`) installs into `.claude/commands/`,
+`.codex/prompts/`, and `.github/prompts/` simultaneously — author once, run anywhere.
+
+```bash
+monolith hub list              # see all SDD commands + utilities
+monolith hub show monolith.specify
+```
+
+---
 
 ## 🎚️ Tiers
 
@@ -122,16 +184,16 @@ Global flag `--root <dir>` runs against another project directory.
 | `full` (default) | filler + dense formatting + no over-engineering | ~55–65% |
 | `ultra` | telegraphic, bullet-first, every directive | ~60–70% |
 
-\* Projections derived from upstream benchmarks, not per-project measurements.
-Run `monolith bench` for a figure measured on the sample corpus.
+\* Projections derived from upstream benchmarks. Run `monolith bench` for a
+figure measured on the sample corpus.
 
-See [docs/CAPABILITIES.md](docs/CAPABILITIES.md) for the full capability list.
+---
 
 ## 🗂️ Task management
 
 Point `monolith plan` at a PRD or any structured Markdown file. Headings and
-list items become tasks; nesting becomes parent/child. Wire up dependencies
-with inline tags — `{#slug}` names a task and `@after:slug` depends on it:
+list items become tasks; nesting becomes parent/child. Wire up dependencies with
+inline tags — `{#slug}` names a task and `@after:slug` depends on it:
 
 ```markdown
 # Auth feature
@@ -141,8 +203,13 @@ with inline tags — `{#slug}` names a task and `@after:slug` depends on it:
 ## Release @after:schema
 ```
 
-`monolith plan prd.md` writes a shared task store under `.monolith/tasks/` and a
-root `TASKS.md` your agents read as ordinary project context.
+`monolith plan prd.md` writes a shared task store under `.monolith/tasks/` and
+a root `TASKS.md` your agents read as ordinary project context.
+
+For per-feature task tracking, put the PRD in `specs/<feature>/spec.md` and
+use `monolith analyze <feature>` to check coverage.
+
+---
 
 ## 📚 Documentation
 
@@ -158,8 +225,8 @@ root `TASKS.md` your agents read as ordinary project context.
 
 <sub>Keywords: reduce Claude Code token usage · Codex `AGENTS.md` token efficiency ·
 GitHub Copilot instructions to save tokens · compress AI command/test output for
-LLMs · cross-agent token optimization CLI · one config for Claude Code, Codex and
-Copilot.</sub>
+LLMs · cross-agent token optimization CLI · spec-driven development workflow ·
+one config for Claude Code, Codex and Copilot.</sub>
 
 ## 🌱 Development & branching
 
@@ -167,7 +234,7 @@ Copilot.</sub>
 |--------|---------|
 | `master` | Default / release branch. Merges here trigger CI to tag a release. |
 | `develop` | Integration branch for completed features. |
-| `fetcher/<name>` | Feature work. |
+| `feature/<name>` | Feature work. |
 | `fix/<name>` | Bug fixes. |
 
 CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs the test suite
