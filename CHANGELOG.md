@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-06-01
+
 ### Added
 - `monolith run -- <command>` (`runner.py`): runs a command, prints its
   compressed output, propagates the exit code, and saves full output to
@@ -87,7 +89,8 @@ All notable changes to this project are documented here. The format is based on
 - CI with test matrix (Python 3.9/3.11/3.12) and auto-tagging on merge to
   `master`.
 
-[Unreleased]: https://github.com/keyurpatel446/Monolith/compare/v0.1.5...HEAD
+[Unreleased]: https://github.com/keyurpatel446/Monolith/compare/v0.1.6...HEAD
+[0.1.6]: https://github.com/keyurpatel446/Monolith/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/keyurpatel446/Monolith/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/keyurpatel446/Monolith/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/keyurpatel446/Monolith/compare/v0.1.2...v0.1.3
