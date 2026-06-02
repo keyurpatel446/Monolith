@@ -48,6 +48,7 @@ from monolith.settings import (
     save_settings,
     settings_exist,
 )
+from monolith import workflow as workflow_module
 from monolith.tasks import (
     STATUSES,
     emit_tasks_md,
@@ -494,6 +495,111 @@ def cmd_gain(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_constitution(args: argparse.Namespace) -> int:
+    """Scaffold .monolith/memory/constitution.md if it does not exist."""
+    created, path = workflow_module.scaffold_constitution(args.root)
+    if created:
+        print(f"Created {path}")
+        print("Fill in your mission, principles, and definition of done.")
+        print("Then install the /monolith.constitution command:")
+        print("  monolith hub install monolith.constitution")
+    else:
+        print(f"Constitution already exists: {path}")
+        print("Edit it directly, or use /monolith.constitution to update it with an agent.")
+    return 0
+
+
+def cmd_specify(args: argparse.Namespace) -> int:
+    """Scaffold specs/<feature>/ with the requested artifact files."""
+    root = args.root
+    feature = args.feature
+    created_any = False
+
+    # Always scaffold spec.md
+    created, path = workflow_module.scaffold_spec(root, feature)
+    if created:
+        print(f"  + {path}")
+        created_any = True
+    else:
+        print(f"  ~ {path}  (already exists)")
+
+    if args.plan:
+        created, path = workflow_module.scaffold_plan(root, feature)
+        if created:
+            print(f"  + {path}")
+            created_any = True
+        else:
+            print(f"  ~ {path}  (already exists)")
+
+    if args.data_model:
+        created, path = workflow_module.scaffold_data_model(root, feature)
+        if created:
+            print(f"  + {path}")
+            created_any = True
+        else:
+            print(f"  ~ {path}  (already exists)")
+
+    if args.contracts:
+        created, path = workflow_module.scaffold_contracts(root, feature)
+        if created:
+            print(f"  + {path}")
+            created_any = True
+        else:
+            print(f"  ~ {path}  (already exists)")
+
+    if created_any:
+        print(f"\nFeature scaffold ready at specs/{feature}/")
+        print("Next: fill in spec.md, then run `monolith analyze " + feature + "`")
+    else:
+        print(f"\nAll artifacts already exist for '{feature}'.")
+    return 0
+
+
+def cmd_analyze(args: argparse.Namespace) -> int:
+    """Report cross-artifact consistency for a feature."""
+    root = args.root
+
+    if args.feature:
+        features = [args.feature]
+    else:
+        features = workflow_module.list_features(root)
+        if not features:
+            print("No features found under specs/. Run `monolith specify <feature>` first.")
+            return 0
+
+    errors = 0
+    for feature in features:
+        print(f"{'─' * 40}")
+        print(f"Feature: {feature}")
+        for finding in workflow_module.analyze_feature(root, feature):
+            print(f"  {finding}")
+            if finding.startswith("ERROR"):
+                errors += 1
+        print()
+
+    if errors:
+        print(f"{errors} error(s) found. Fix before implementing.")
+        return 1
+    return 0
+
+
+def cmd_checklist(args: argparse.Namespace) -> int:
+    """Generate or write a quality checklist for a feature."""
+    root = args.root
+    feature = args.feature
+    text = workflow_module.generate_checklist(root, feature)
+
+    if args.write:
+        out_path = workflow_module.artifact_path(root, feature, "checklist.md")
+        os.makedirs(os.path.dirname(out_path), exist_ok=True)
+        with open(out_path, "w", encoding="utf-8") as fh:
+            fh.write(text)
+        print(f"Written to {out_path}")
+    else:
+        print(text)
+    return 0
+
+
 def cmd_mcp(args: argparse.Namespace) -> int:
     """Run the experimental MCP server (shrink tool) over stdio."""
     return mcp_serve()
@@ -577,6 +683,46 @@ def build_parser() -> argparse.ArgumentParser:
     p_scan = sub.add_parser("scan", help="scan the repo for @monolith: tags")
     p_scan.add_argument("--apply", action="store_true", help="apply found tags (default: dry run)")
     p_scan.set_defaults(func=cmd_scan)
+
+    p_constitution = sub.add_parser(
+        "constitution", help="scaffold .monolith/memory/constitution.md"
+    )
+    p_constitution.set_defaults(func=cmd_constitution)
+
+    p_specify = sub.add_parser(
+        "specify", help="scaffold specs/<feature>/ artifact files"
+    )
+    p_specify.add_argument("feature", help="feature name, e.g. user-auth")
+    p_specify.add_argument(
+        "--plan", action="store_true", help="also scaffold plan.md"
+    )
+    p_specify.add_argument(
+        "--data-model", dest="data_model", action="store_true",
+        help="also scaffold data-model.md",
+    )
+    p_specify.add_argument(
+        "--contracts", action="store_true", help="also scaffold contracts/README.md"
+    )
+    p_specify.set_defaults(func=cmd_specify)
+
+    p_analyze = sub.add_parser(
+        "analyze", help="validate cross-artifact consistency for a feature"
+    )
+    p_analyze.add_argument(
+        "feature", nargs="?",
+        help="feature name (default: all features under specs/)",
+    )
+    p_analyze.set_defaults(func=cmd_analyze)
+
+    p_checklist = sub.add_parser(
+        "checklist", help="generate a quality checklist for a feature"
+    )
+    p_checklist.add_argument("feature", help="feature name")
+    p_checklist.add_argument(
+        "--write", action="store_true",
+        help="write checklist.md into specs/<feature>/ instead of printing",
+    )
+    p_checklist.set_defaults(func=cmd_checklist)
 
     p_plan = sub.add_parser("plan", help="parse a PRD/Markdown file into a task tree")
     p_plan.add_argument("prd", help="path to the PRD / Markdown file")
