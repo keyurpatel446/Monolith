@@ -11,9 +11,8 @@ removed, so the result stays trustworthy:
 * ``ultra`` — also clip very long outputs to a head + tail with an explicit
               ``... (omitted N lines) ...`` marker in the middle.
 
-This is the deterministic, offline counterpart to caveman's MCP output
-shrinking; Phase 5 wires it into an (experimental) MCP server in
-``mcp_server.py``.
+It is deterministic and offline; Phase 5 wires it into an (experimental) MCP
+server in ``mcp_server.py``.
 """
 
 from __future__ import annotations

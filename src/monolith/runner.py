@@ -1,4 +1,4 @@
-"""Run a command and compress its output (inspired by rtk).
+"""Run a command and compress its output.
 
 This wraps an external command, captures its combined output, and compresses it
 with :mod:`monolith.shrink` so far fewer tokens reach the agent's context. Two

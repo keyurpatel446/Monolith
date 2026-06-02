@@ -48,14 +48,9 @@ the same rules into three places and keep them in sync by hand. Monolith keeps
 one canonical source and compiles it. Re-running is safe: managed content lives
 between markers and never clobbers your own notes in the same file.
 
-It synthesizes the best ideas from popular projects into one cross-agent tool:
-filler removal (inspired by
-[claude-token-efficient](https://github.com/drona23/claude-token-efficient)),
-dense-output tiers (inspired by
-[caveman](https://github.com/JuliusBrussee/caveman)), task management (inspired
-by [claude-task-master](https://github.com/eyaltoledano/claude-task-master)),
-and a resource hub (inspired by
-[awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code)).
+It unifies what used to take several separate tools into one cross-agent CLI:
+token-saving rules, dense-output tiers, task management, a resource hub, and
+runtime command-output compression.
 
 ## 📦 Install
 

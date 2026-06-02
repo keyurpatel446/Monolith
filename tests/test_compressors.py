@@ -82,6 +82,21 @@ class LintCompressorTests(unittest.TestCase):
         self.assertIn("3 problems", out)
         self.assertNotIn("\n\n", out)  # blank lines dropped
 
+    def test_compacts_diagnostics_for_real_savings(self):
+        # Many files/diagnostics: compacting (drop prose, keep loc+rule) should
+        # save a meaningful fraction, not ~0%.
+        big = []
+        for f in range(40):
+            big.append(f"/src/components/widget{f}.jsx")
+            big.append(f"  {f+1}:5  error    '{f}' is assigned but never used   no-unused-vars")
+            big.append("")
+        big.append("✖ 40 problems (40 errors, 0 warnings)")
+        text = "\n".join(big)
+        out, _ = compress_for(["eslint", "."], text)
+        reduction = 1 - count_tokens(out) / count_tokens(text)
+        self.assertGreater(reduction, 0.30)
+        self.assertIn("no-unused-vars", out)  # still actionable
+
 
 class GitStatusCompressorTests(unittest.TestCase):
     STATUS = "\n".join([

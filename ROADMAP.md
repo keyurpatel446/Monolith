@@ -9,15 +9,6 @@ Codex, and GitHub Copilot. This document is the living plan.
 > Author your AI-workflow rules and assets **once**; let Monolith deliver them
 > in the native format every agent understands.
 
-## Source projects and what we take from each
-
-| Source | What Monolith adopts | Phase |
-|--------|----------------------|-------|
-| [claude-token-efficient](https://github.com/drona23/claude-token-efficient) | Filler-removal instruction rules | 1 (done) |
-| [caveman](https://github.com/JuliusBrussee/caveman) | Compression profiles, stats, MCP output shrinking | 1–2, 5 |
-| [claude-task-master](https://github.com/eyaltoledano/claude-task-master) | PRD → task breakdown, dependency tracking | 3 |
-| [awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code) | Curated, installable resource catalog | 4 |
-
 ## Phases
 
 ### Phase 0 — Scaffold ✅
@@ -72,7 +63,7 @@ Codex, and GitHub Copilot. This document is the living plan.
 - Handlers are unit-tested; the live stdio loop is marked experimental pending
   validation against more MCP clients.
 
-### Phase 5.5 — Command wrapper ✅ (inspired by rtk)
+### Phase 5.5 — Command wrapper ✅
 - `monolith run -- <cmd>` (`runner.py`): run a command, compress its output,
   propagate its exit code, and on failure save full output to `.monolith/tee/`
   so the agent needn't re-run it.
@@ -98,7 +89,7 @@ Post-1.0-readiness work, roughly in priority order:
   measured number per tier, not just `full`.
 - **MCP hardening** — validate the stdio server against real MCP clients; add an
   `apply`/`tasks` read tool alongside `shrink`.
-- **More command-aware compression** (rtk-style) — build-tool compressors
+- **More command-aware compression** — build-tool compressors
   (webpack/next/cargo build, docker) and transparent agent shell-hooks so
   commands are wrapped without typing `monolith run`. (Test/lint/git/grep/find
   compressors shipped in 0.1.6–0.1.7.)
