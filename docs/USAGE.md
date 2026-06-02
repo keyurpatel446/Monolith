@@ -118,6 +118,21 @@ fold identical lines), `ultra` (+ clip very long output with a marker).
 pytest -q 2>&1 | monolith shrink --level full > short.log
 ```
 
+### `monolith run [--level lite|full|ultra] [--timeout N] -- <command>`
+Runs `<command>`, prints its **compressed** combined output, and exits with the
+command's own return code (so the agent still sees pass/fail). On failure the
+**full** output is saved to `.monolith/tee/` and a pointer is appended, so the
+agent can read details without re-running. Each run records token savings.
+
+```bash
+monolith run -- pytest -q          # compressed test output; full log saved if it fails
+monolith run -- git status
+```
+
+### `monolith gain`
+Reports cumulative token savings recorded by `monolith run` (commands run,
+tokens in/out, total saved).
+
 ### `monolith mcp`
 Runs the **experimental** MCP server over stdio (newline-delimited JSON-RPC),
 exposing a single `shrink` tool so an MCP-capable agent can compress tool output

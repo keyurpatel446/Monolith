@@ -15,9 +15,13 @@ Monolith is pre-1.0; only the latest released version receives fixes.
 
 Monolith is a local, offline CLI with a deliberately small attack surface:
 
-- **No code execution.** The codebase contains no `eval`, `exec`, `subprocess`,
+- **No dynamic code evaluation.** The codebase contains no `eval`, `exec`,
   `os.system`, `pickle`, or dynamic import of untrusted input. Parsing (PRD,
   tags, JSON-RPC) is pure data handling.
+- **`monolith run` executes the command you give it**, and only that — via
+  `subprocess` with `shell=False` (an argument list, no shell interpolation), so
+  there is no shell-injection surface. It is an explicit command wrapper, like
+  any task runner; run only commands you would run yourself.
 - **No network in the core.** The only optional network dependency is
   `tiktoken` (the `[bench]` extra); if its encoding can't be fetched, Monolith
   falls back to a heuristic counter.

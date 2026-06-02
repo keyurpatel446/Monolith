@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Added
+- `monolith run -- <command>` (`runner.py`): runs a command, prints its
+  compressed output, propagates the exit code, and saves full output to
+  `.monolith/tee/` on failure (inspired by rtk).
+- `monolith gain`: cumulative token-savings ledger across `run` invocations.
+
 ## [0.1.5] - 2026-06-01
 
 ### Added

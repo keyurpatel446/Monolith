@@ -72,6 +72,12 @@ Codex, and GitHub Copilot. This document is the living plan.
 - Handlers are unit-tested; the live stdio loop is marked experimental pending
   validation against more MCP clients.
 
+### Phase 5.5 — Command wrapper ✅ (inspired by rtk)
+- `monolith run -- <cmd>` (`runner.py`): run a command, compress its output,
+  propagate its exit code, and on failure save full output to `.monolith/tee/`
+  so the agent needn't re-run it.
+- `monolith gain`: cumulative token-savings ledger across `run` invocations.
+
 ## v0.2.0 (planned)
 
 Post-1.0-readiness work, roughly in priority order:
@@ -88,6 +94,9 @@ Post-1.0-readiness work, roughly in priority order:
   measured number per tier, not just `full`.
 - **MCP hardening** — validate the stdio server against real MCP clients; add an
   `apply`/`tasks` read tool alongside `shrink`.
+- **Command-aware compression** (rtk-style) — per-command compressors for `run`
+  (git status, test runners, grep/find, linters) using filter/group/truncate/
+  dedup, plus optional agent shell-hooks so commands are wrapped transparently.
 - **Distribution & brand** — first PyPI release via Trusted Publishing (see
   `docs/PUBLISHING.md`), a recorded demo GIF in the README, and a
   social-preview image (1280×640: 🧱 logo + tagline + before/after numbers).
