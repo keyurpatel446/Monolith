@@ -24,7 +24,8 @@ import time
 from dataclasses import dataclass
 from typing import List, Sequence
 
-from monolith.shrink import DEFAULT_LEVEL, shrink
+from monolith.compressors import compress_for
+from monolith.shrink import DEFAULT_LEVEL
 from monolith.tokens import count_tokens
 
 TEE_DIR = os.path.join(".monolith", "tee")
@@ -40,6 +41,7 @@ class RunResult:
     before_tokens: int
     after_tokens: int
     tee_path: str | None  # full output on failure, else None
+    kind: str = "generic"  # which compressor was used (e.g. "test")
 
     @property
     def reduction(self) -> float:
@@ -107,14 +109,19 @@ def run_command(
     if proc.stderr:
         raw = (raw + "\n" + proc.stderr) if raw else proc.stderr
 
-    result = shrink(raw, level)
+    # Command-aware compression when we recognise the command; else generic.
+    compressed, kind = compress_for(argv, raw, level)
+    before_tokens = count_tokens(raw)
+    after_tokens = count_tokens(compressed)
+
     tee_path = _save_tee(raw, root, argv) if proc.returncode != 0 else None
-    _record_gain(result.before_tokens, result.after_tokens, root)
+    _record_gain(before_tokens, after_tokens, root)
 
     return RunResult(
         returncode=proc.returncode,
-        output=result.text,
-        before_tokens=result.before_tokens,
-        after_tokens=result.after_tokens,
+        output=compressed,
+        before_tokens=before_tokens,
+        after_tokens=after_tokens,
         tee_path=tee_path,
+        kind=kind,
     )

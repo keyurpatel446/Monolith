@@ -124,8 +124,13 @@ command's own return code (so the agent still sees pass/fail). On failure the
 **full** output is saved to `.monolith/tee/` and a pointer is appended, so the
 agent can read details without re-running. Each run records token savings.
 
+`run` is **command-aware**: it recognises test runners (pytest, jest, vitest,
+`go test`, `cargo test`, `unittest`, `npm test`) and keeps only failures + the
+summary — ~90% reduction on large runs. Unrecognised commands fall back to the
+generic `--level` compression.
+
 ```bash
-monolith run -- pytest -q          # compressed test output; full log saved if it fails
+monolith run -- pytest -q          # failures + summary only; full log saved if it fails
 monolith run -- git status
 ```
 

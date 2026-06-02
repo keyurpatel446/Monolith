@@ -10,6 +10,10 @@ All notable changes to this project are documented here. The format is based on
 - `monolith run -- <command>` (`runner.py`): runs a command, prints its
   compressed output, propagates the exit code, and saves full output to
   `.monolith/tee/` on failure (inspired by rtk).
+- Command-aware compression (`compressors.py`): `run` recognises test commands
+  (pytest/jest/vitest/go test/cargo test/unittest/npm test) and keeps only
+  failures + the summary (~90% reduction on large runs), falling back to generic
+  `shrink` for unrecognised commands.
 - `monolith gain`: cumulative token-savings ledger across `run` invocations.
 
 ## [0.1.5] - 2026-06-01

@@ -468,7 +468,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         sys.stdout.write(f"↳ full output: {result.tee_path}\n")
     # Savings to stderr so stdout stays clean for piping.
     print(
-        f"run[{args.level}] exit={result.returncode}: "
+        f"run[{result.kind}] exit={result.returncode}: "
         f"{result.before_tokens} -> {result.after_tokens} tokens "
         f"({result.reduction * 100:.0f}% saved)",
         file=sys.stderr,
