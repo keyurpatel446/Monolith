@@ -14,6 +14,8 @@ Sub-commands
     task      update a single task's status
     hub       browse and install curated agent resources
     shrink    compress verbose text/output deterministically
+    run       run a command and compress its output (tee full output on failure)
+    gain      show cumulative token savings from `run`
     mcp       run the experimental MCP server (shrink tool over stdio)
     doctor    verify each configured agent picked up the Monolith block
 
@@ -26,6 +28,7 @@ from __future__ import annotations
 import argparse
 import os
 import signal
+import subprocess
 import sys
 from typing import List, Sequence
 
@@ -35,6 +38,7 @@ from monolith.benchmark import load_last_report, run_benchmark, save_report
 from monolith.compression import DEFAULT_TIER, get_tier, tier_names
 from monolith import hub as hub_module
 from monolith.mcp_server import serve as mcp_serve
+from monolith.runner import load_gain, run_command
 from monolith.scan import apply_found, scan_repo
 from monolith.shrink import DEFAULT_LEVEL, LEVELS, shrink
 from monolith.settings import (
@@ -434,6 +438,62 @@ def cmd_shrink(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_run(args: argparse.Namespace) -> int:
+    """Run a command, print its compressed output, tee full output on failure.
+
+    Exits with the wrapped command's own return code so the agent still sees
+    pass/fail.
+    """
+    argv = list(args.cmd)
+    if argv and argv[0] == "--":
+        argv = argv[1:]
+    if not argv:
+        print("error: nothing to run (usage: monolith run -- <command>)", file=sys.stderr)
+        return 2
+
+    try:
+        result = run_command(argv, root=args.root, level=args.level, timeout=args.timeout)
+    except FileNotFoundError:
+        print(f"error: command not found: {argv[0]}", file=sys.stderr)
+        return 127
+    except subprocess.TimeoutExpired:
+        print(f"error: command timed out after {args.timeout}s", file=sys.stderr)
+        return 124
+
+    # Compressed output to stdout; on failure point to the full saved output.
+    sys.stdout.write(result.output)
+    if result.output and not result.output.endswith("\n"):
+        sys.stdout.write("\n")
+    if result.tee_path:
+        sys.stdout.write(f"↳ full output: {result.tee_path}\n")
+    # Savings to stderr so stdout stays clean for piping.
+    print(
+        f"run[{result.kind}] exit={result.returncode}: "
+        f"{result.before_tokens} -> {result.after_tokens} tokens "
+        f"({result.reduction * 100:.0f}% saved)",
+        file=sys.stderr,
+    )
+    return result.returncode
+
+
+def cmd_gain(args: argparse.Namespace) -> int:
+    """Report cumulative token savings recorded by `monolith run`."""
+    ledger = load_gain(args.root)
+    if not ledger or ledger.get("runs", 0) == 0:
+        print("No runs recorded yet. Use `monolith run -- <command>` first.")
+        return 0
+    before = ledger["before_tokens"]
+    after = ledger["after_tokens"]
+    saved = before - after
+    pct = (saved / before * 100) if before else 0.0
+    print("Monolith gain")
+    print(f"  commands run:   {ledger['runs']}")
+    print(f"  tokens in:      {before}")
+    print(f"  tokens out:     {after}")
+    print(f"  tokens saved:   {saved}  ({pct:.0f}%)")
+    return 0
+
+
 def cmd_mcp(args: argparse.Namespace) -> int:
     """Run the experimental MCP server (shrink tool) over stdio."""
     return mcp_serve()
@@ -549,6 +609,21 @@ def build_parser() -> argparse.ArgumentParser:
         "--level", choices=LEVELS, default=DEFAULT_LEVEL, help="compression level"
     )
     p_shrink.set_defaults(func=cmd_shrink)
+
+    p_run = sub.add_parser("run", help="run a command and compress its output")
+    p_run.add_argument(
+        "--level", choices=LEVELS, default=DEFAULT_LEVEL, help="compression level"
+    )
+    p_run.add_argument("--timeout", type=float, default=None, help="seconds before aborting")
+    p_run.add_argument(
+        "cmd",
+        nargs=argparse.REMAINDER,
+        help="the command to run, e.g. `monolith run -- pytest -q`",
+    )
+    p_run.set_defaults(func=cmd_run)
+
+    p_gain = sub.add_parser("gain", help="show cumulative token savings from run")
+    p_gain.set_defaults(func=cmd_gain)
 
     p_mcp = sub.add_parser("mcp", help="run the experimental MCP server (stdio)")
     p_mcp.set_defaults(func=cmd_mcp)

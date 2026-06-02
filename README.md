@@ -111,6 +111,8 @@ monolith bench                # measure real token reduction on the sample corpu
 |---------|-------------|
 | `monolith hub list\|search <q>\|show <id>\|install <id> [--agent]` | Browse and install curated agent resources. |
 | `monolith shrink [file] [--level lite\|full\|ultra]` | Compress verbose output (stdin or file) deterministically. |
+| `monolith run -- <command>` | Run a command, compress its output, save full output to disk on failure. |
+| `monolith gain` | Show cumulative token savings from `run`. |
 | `monolith mcp` | Run the experimental MCP server exposing `shrink` over stdio. |
 | `monolith scan [--apply]` | Scan the repo for `@monolith:` task/rule tags and apply them. |
 

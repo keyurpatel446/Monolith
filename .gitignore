@@ -21,3 +21,5 @@ htmlcov/
 
 # Monolith local state (generated per-project, not committed in consumer repos)
 .monolith/stats.json
+.monolith/gain.json
+.monolith/tee/
