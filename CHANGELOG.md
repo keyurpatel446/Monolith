@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Added
+- More command-aware compressors for `run`: linters/type-checkers
+  (eslint/tsc/ruff/flake8/pylint/mypy/biome/stylelint), `git status` (drops the
+  "(use …)" hint chatter), and grep/find (group matches by file, paths by
+  directory; never expands).
+
 ## [0.1.6] - 2026-06-01
 
 ### Added
