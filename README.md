@@ -68,12 +68,18 @@ pip install -e .              # or: pip install -e ".[bench]" for exact token co
 
 ## 🚀 Quickstart
 
-### Token efficiency (2 minutes)
+### Claude Code (most common — see [full guide](docs/agents/claude-code.md))
+
+```bash
+monolith init && monolith apply --agent claude && monolith doctor
+```
+
+### All 7 agents at once
 
 ```bash
 monolith init                 # detect agents, create .monolith/settings.json
-monolith apply --agent all    # write CLAUDE.md, AGENTS.md, copilot-instructions.md
-monolith doctor               # verify each agent picked up the rules
+monolith apply --agent all    # write all 7 config files in one go
+monolith doctor               # verify every agent picked up the rules
 monolith stats                # see projected savings + input cost
 ```
 
@@ -98,6 +104,66 @@ monolith hub install monolith.analyze
 monolith hub install monolith.checklist
 monolith hub install monolith.implement
 ```
+
+---
+
+## 🤖 Claude Code setup
+
+> Full guide: [docs/agents/claude-code.md](docs/agents/claude-code.md)
+
+Claude Code reads `CLAUDE.md` automatically. Monolith writes its rules there.
+Three steps and you're done:
+
+**1. Install**
+
+```bash
+pipx install monolith-ai
+```
+
+**2. Set up your project** (run once per repo)
+
+```bash
+monolith init                  # creates .monolith/settings.json
+monolith apply --agent claude  # writes token rules into CLAUDE.md
+monolith doctor                # confirms: "[ok ] Claude Code — managed block present"
+```
+
+Open Claude Code in the project — rules are active immediately. No app config needed.
+
+**3. Install slash commands** (optional but recommended)
+
+```bash
+# SDD workflow — use /monolith.specify, /monolith.clarify, etc. inside Claude Code
+monolith hub install monolith.constitution
+monolith hub install monolith.specify
+monolith hub install monolith.clarify
+monolith hub install monolith.analyze
+monolith hub install monolith.checklist
+monolith hub install monolith.implement
+
+# Utilities
+monolith hub install concise-commit   # /concise-commit  — one-line commit message
+monolith hub install terse-review     # /terse-review    — correctness-only review
+monolith hub install explain-diff     # /explain-diff    — bullet summary of diff
+```
+
+**4. Add the MCP server** (optional — compresses command output inside the session)
+
+```bash
+claude mcp add monolith-shrink -- monolith mcp
+```
+
+**5. Compress command output** (optional — wrap any command)
+
+```bash
+monolith run -- pytest -q        # Claude sees failures + summary only (~90% smaller)
+monolith run -- ruff check .     # Claude sees diagnostics + counts
+monolith run -- git status       # drops hint noise
+```
+
+> For Cursor, Windsurf, Copilot, Codex, Gemini CLI, or Aider — see
+> [docs/agents/](docs/agents/) or just run `monolith apply --agent all`
+> to write all 7 config files at once.
 
 ---
 
