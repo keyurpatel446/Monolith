@@ -24,6 +24,10 @@ development:**
 | Claude Code | `CLAUDE.md` |
 | OpenAI Codex | `AGENTS.md` |
 | GitHub Copilot | `.github/copilot-instructions.md` |
+| Cursor | `.cursorrules` |
+| Windsurf | `.windsurfrules` |
+| Gemini CLI | `GEMINI.md` |
+| Aider | `CONVENTIONS.md` |
 
 ---
 
@@ -127,6 +131,7 @@ monolith hub install monolith.implement
 | `monolith plan <prd-file> [--force]` | Parse a PRD/Markdown file into a task tree; writes `TASKS.md`. |
 | `monolith tasks [--emit]` | List the task tree; `--emit` re-writes `TASKS.md`. |
 | `monolith task <id> --status todo\|doing\|done` | Update a task's status (warns on unmet dependencies). |
+| `monolith tasks-to-issues --repo owner/repo` | Push todo/doing tasks to GitHub Issues (requires `GITHUB_TOKEN`). |
 
 ### Resource hub & runtime
 
@@ -223,10 +228,12 @@ use `monolith analyze <feature>` to check coverage.
 
 ---
 
-<sub>Keywords: reduce Claude Code token usage · Codex `AGENTS.md` token efficiency ·
-GitHub Copilot instructions to save tokens · compress AI command/test output for
-LLMs · cross-agent token optimization CLI · spec-driven development workflow ·
-one config for Claude Code, Codex and Copilot.</sub>
+<sub>Keywords: reduce Claude Code token usage · Codex AGENTS.md token efficiency ·
+GitHub Copilot instructions to save tokens · Cursor cursorrules token optimization ·
+Windsurf windsurfrules AI rules · Gemini CLI GEMINI.md project instructions ·
+Aider CONVENTIONS.md project rules · compress AI command output test output for LLMs ·
+cross-agent token optimization CLI · spec-driven development AI workflow ·
+one config for Claude Code Codex Copilot Cursor Windsurf Gemini Aider.</sub>
 
 ## 🌱 Development & branching
 

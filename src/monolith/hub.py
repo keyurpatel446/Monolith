@@ -35,11 +35,15 @@ class Resource:
 
 # Per-agent path conventions reused by the catalog below.
 def _paths(name: str, ext: str = "md") -> Dict[str, str]:
-    """Standard cross-agent install paths for a named asset."""
+    """Standard cross-agent install paths for a named asset (all 7 agents)."""
     return {
-        "claude": os.path.join(".claude", "commands", f"{name}.{ext}"),
-        "codex": os.path.join(".codex", "prompts", f"{name}.{ext}"),
-        "copilot": os.path.join(".github", "prompts", f"{name}.prompt.{ext}"),
+        "claude":   os.path.join(".claude",   "commands",        f"{name}.{ext}"),
+        "codex":    os.path.join(".codex",    "prompts",         f"{name}.{ext}"),
+        "copilot":  os.path.join(".github",   "prompts",         f"{name}.prompt.{ext}"),
+        "cursor":   os.path.join(".cursor",   "rules",           f"{name}.mdc"),
+        "windsurf": os.path.join(".windsurf", "rules",           f"{name}.{ext}"),
+        "gemini":   os.path.join(".gemini",   "commands",        f"{name}.{ext}"),
+        "aider":    os.path.join(".aider",    "instructions",    f"{name}.{ext}"),
     }
 
 
