@@ -6,6 +6,18 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-06-01
+
+### Added
+- `monolith run -- <command>` (`runner.py`): runs a command, prints its
+  compressed output, propagates the exit code, and saves full output to
+  `.monolith/tee/` on failure (inspired by rtk).
+- Command-aware compression (`compressors.py`): `run` recognises test commands
+  (pytest/jest/vitest/go test/cargo test/unittest/npm test) and keeps only
+  failures + the summary (~90% reduction on large runs), falling back to generic
+  `shrink` for unrecognised commands.
+- `monolith gain`: cumulative token-savings ledger across `run` invocations.
+
 ## [0.1.5] - 2026-06-01
 
 ### Added
@@ -77,7 +89,8 @@ All notable changes to this project are documented here. The format is based on
 - CI with test matrix (Python 3.9/3.11/3.12) and auto-tagging on merge to
   `master`.
 
-[Unreleased]: https://github.com/keyurpatel446/Monolith/compare/v0.1.5...HEAD
+[Unreleased]: https://github.com/keyurpatel446/Monolith/compare/v0.1.6...HEAD
+[0.1.6]: https://github.com/keyurpatel446/Monolith/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/keyurpatel446/Monolith/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/keyurpatel446/Monolith/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/keyurpatel446/Monolith/compare/v0.1.2...v0.1.3
