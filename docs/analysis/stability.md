@@ -22,7 +22,7 @@ finish the items below first. Stay on `0.1.x`.
 
 | # | Item | Why it blocks 1.0 |
 |---|------|-------------------|
-| 1 | **Lint compressor ~1% effective** | Claimed feature that barely works; needs grouping (benchmarks.md). |
+| 1 | ~~Lint compressor ~1%~~ ✅ fixed in 0.1.8 (~49–55%) | — |
 | 2 | **MCP server is experimental** | Live stdio loop unvalidated against real clients; mark clearly or stabilize. |
 | 3 | **No direct tests** for `tokens`, `settings`, `compression`, `directives`, `mcp_server` | Coverage gaps on the stable surface. (Indirectly exercised, but no unit tests.) |
 | 4 | **No real-world usage data** | Savings are measured on synthetic/sample outputs, not aggregated real sessions. |
@@ -32,7 +32,7 @@ finish the items below first. Stay on `0.1.x`.
 
 ## Proposed path to 1.0
 
-1. Fix the lint compressor (grouping) and re-measure.
+1. ~~Fix the lint compressor and re-measure.~~ ✅ done (0.1.8).
 2. Add unit tests for the five untested modules; target a coverage number.
 3. Decide MCP: stabilize or label it `experimental` in `--help` and docs.
 4. Collect real-world `gain` data across a battery of commands (see
