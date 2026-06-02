@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "monolith-ai"
-version = "0.1.6"
+version = "0.1.7"
 description = "Cross-agent token-efficiency layer for AI coding assistants (Claude Code, OpenAI Codex, GitHub Copilot)."
 readme = "README.md"
 requires-python = ">=3.9"
