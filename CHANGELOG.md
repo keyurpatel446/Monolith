@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-06-01
+
 ### Added
 - More command-aware compressors for `run`: linters/type-checkers
   (eslint/tsc/ruff/flake8/pylint/mypy/biome/stylelint), `git status` (drops the
@@ -95,7 +97,8 @@ All notable changes to this project are documented here. The format is based on
 - CI with test matrix (Python 3.9/3.11/3.12) and auto-tagging on merge to
   `master`.
 
-[Unreleased]: https://github.com/keyurpatel446/Monolith/compare/v0.1.6...HEAD
+[Unreleased]: https://github.com/keyurpatel446/Monolith/compare/v0.1.7...HEAD
+[0.1.7]: https://github.com/keyurpatel446/Monolith/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/keyurpatel446/Monolith/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/keyurpatel446/Monolith/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/keyurpatel446/Monolith/compare/v0.1.3...v0.1.4
