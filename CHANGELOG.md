@@ -6,6 +6,14 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.1.8] - 2026-06-01
+
+### Changed
+- Lint compressor now compacts diagnostics — keeps location + level + rule,
+  drops the verbose human message and repeated file paths. Measured ~49–55%
+  reduction (was ~1%); full detail still tee'd on failure.
+- Removed "inspired by" attributions from the docs and code comments.
+
 ## [0.1.7] - 2026-06-01
 
 ### Added
@@ -19,7 +27,7 @@ All notable changes to this project are documented here. The format is based on
 ### Added
 - `monolith run -- <command>` (`runner.py`): runs a command, prints its
   compressed output, propagates the exit code, and saves full output to
-  `.monolith/tee/` on failure (inspired by rtk).
+  `.monolith/tee/` on failure.
 - Command-aware compression (`compressors.py`): `run` recognises test commands
   (pytest/jest/vitest/go test/cargo test/unittest/npm test) and keeps only
   failures + the summary (~90% reduction on large runs), falling back to generic
@@ -97,7 +105,8 @@ All notable changes to this project are documented here. The format is based on
 - CI with test matrix (Python 3.9/3.11/3.12) and auto-tagging on merge to
   `master`.
 
-[Unreleased]: https://github.com/keyurpatel446/Monolith/compare/v0.1.7...HEAD
+[Unreleased]: https://github.com/keyurpatel446/Monolith/compare/v0.1.8...HEAD
+[0.1.8]: https://github.com/keyurpatel446/Monolith/compare/v0.1.7...v0.1.8
 [0.1.7]: https://github.com/keyurpatel446/Monolith/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/keyurpatel446/Monolith/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/keyurpatel446/Monolith/compare/v0.1.4...v0.1.5

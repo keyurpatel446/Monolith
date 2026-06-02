@@ -1,10 +1,10 @@
 """Command-aware (semantic) output compressors.
 
 Generic ``shrink`` is content-agnostic, so it can't tell signal from noise — 196
-distinct ``PASSED`` lines look like 196 unique lines to it. The big wins (rtk's
-~90%) come from *understanding the command*: for a test run you keep only the
-failures and the summary; for a linter you keep only the diagnostics; for
-``git status`` you drop the "(use …)" hint chatter.
+distinct ``PASSED`` lines look like 196 unique lines to it. The big wins (~90%)
+come from *understanding the command*: for a test run you keep only the failures
+and the summary; for a linter you keep only the diagnostics; for ``git status``
+you drop the "(use …)" hint chatter.
 
 This module maps a command (its argv) to a specialised compressor. ``run`` uses
 it; if no compressor matches, it falls back to generic ``shrink``. Because
@@ -72,13 +72,15 @@ _LINT_TOKENS = {
     "eslint", "tsc", "ruff", "flake8", "pylint", "mypy", "golangci-lint",
     "stylelint", "biome",
 }
-_LINT_KEEP = re.compile(
-    r"^\S+\.\w+$"                       # eslint per-file header (path on its own line)
-    r"|^\s*\d+:\d+\b"                   # eslint "  12:5  error ..."
-    r"|^\S+[:(]\d+([:,]\d+)?[):]"       # file:line[:col]: or file(line,col):
-    r"|\berror\b|\bwarning\b"           # tsc/ruff messages
-    r"|\b\d+\s+(error|warning|problem)s?\b"  # summary counts
-)
+
+# eslint "stylish": file headers (path alone) + "  L:C  level  message  rule".
+_ESLINT_FILE = re.compile(r"^\S*[\w./\\-]+\.\w+$")
+_ESLINT_DIAG = re.compile(r"^\s*(\d+):(\d+)\s+(error|warning)\s+.*?\s{2,}(\S+)\s*$")
+# file:line[:col]: / file(line,col): diagnostics (ruff/flake8/tsc/pylint/mypy).
+_FILECOL = re.compile(r"^(\S+?)[:(](\d+)(?:[:,](\d+))?\)?:?\s+(.*)$")
+_SUMMARY = re.compile(r"\b\d+\s+(error|warning|problem|issue)s?\b", re.I)
+# Short code/keyword to keep from a "file:line:col: <rest>" message.
+_CODE = re.compile(r"^(error|warning|[A-Z]+\d+|[EWF]\d+|TS\d+)", re.I)
 
 
 def _is_lint(argv: Sequence[str]) -> bool:
@@ -88,11 +90,45 @@ def _is_lint(argv: Sequence[str]) -> bool:
 
 
 def _compress_lint(argv: Sequence[str], text: str) -> str:
-    lines = [ln.rstrip() for ln in text.splitlines() if ln.strip()]
-    kept = [ln for ln in lines if _LINT_KEEP.search(ln)]
-    if not kept:
-        kept = lines[-2:]  # e.g. "All files pass linting." / "0 problems"
-    return _dedupe(kept)
+    """Compact diagnostics: keep location + level/code + rule, drop prose.
+
+    eslint output is already mostly diagnostics, so line-keeping barely helps;
+    the win is dropping the long human messages and repeated file paths while
+    keeping what an agent acts on (file, line:col, rule). Full detail remains in
+    the tee file on failure.
+    """
+    out: List[str] = []
+    for raw in text.splitlines():
+        s = raw.rstrip()
+        if not s.strip():
+            continue
+
+        diag = _ESLINT_DIAG.match(s)
+        if diag:
+            line, col, level, rule = diag.groups()
+            out.append(f"  {line}:{col} {level[0].upper()} {rule}")  # "  12:5 E no-unused-vars"
+            continue
+        if _ESLINT_FILE.match(s):  # eslint per-file header
+            out.append(s)
+            continue
+
+        fc = _FILECOL.match(s)
+        if fc:
+            path, line, col, rest = fc.groups()
+            loc = f"{path}:{line}:{col}" if col else f"{path}:{line}"
+            code = rest.split()[0] if rest.split() else ""
+            # keep code/keyword + a short hint, not the whole sentence
+            out.append(f"{loc} {code}".rstrip())
+            continue
+        if _SUMMARY.search(s):
+            out.append(s.strip())
+
+    if not out:
+        out = [ln.strip() for ln in text.splitlines() if ln.strip()][-2:]
+    grouped = _dedupe(out)
+    # Never expand.
+    passthrough = _dedupe([ln.rstrip() for ln in text.splitlines() if ln.strip()])
+    return grouped if len(grouped) <= len(passthrough) else passthrough
 
 
 # --- git status ---------------------------------------------------------

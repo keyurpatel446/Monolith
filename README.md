@@ -8,9 +8,10 @@
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#-development--branching)
 [![Buy me a coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-PayPal-00457C?logo=paypal&logoColor=white)](https://paypal.me/keyurpatel446)
 
-Monolith is a small, dependency-free CLI that writes proven token-saving rules
-into the native config file each AI coding agent already reads — so you author
-the rules **once** and every agent obeys them:
+**Reduce token usage across Claude Code, OpenAI Codex, and GitHub Copilot from one
+config.** Monolith is a small, dependency-free CLI that writes proven token-saving
+rules into the native instructions file each AI coding agent already reads — so
+you author the rules **once** and every agent obeys them:
 
 | Agent | File Monolith generates |
 |-------|-------------------------|
@@ -47,14 +48,9 @@ the same rules into three places and keep them in sync by hand. Monolith keeps
 one canonical source and compiles it. Re-running is safe: managed content lives
 between markers and never clobbers your own notes in the same file.
 
-It synthesizes the best ideas from popular projects into one cross-agent tool:
-filler removal (inspired by
-[claude-token-efficient](https://github.com/drona23/claude-token-efficient)),
-dense-output tiers (inspired by
-[caveman](https://github.com/JuliusBrussee/caveman)), task management (inspired
-by [claude-task-master](https://github.com/eyaltoledano/claude-task-master)),
-and a resource hub (inspired by
-[awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code)).
+It unifies what used to take several separate tools into one cross-agent CLI:
+token-saving rules, dense-output tiers, task management, a resource hub, and
+runtime command-output compression.
 
 ## 📦 Install
 
@@ -155,7 +151,15 @@ root `TASKS.md` your agents read as ordinary project context.
   [Codex](docs/agents/codex.md) · [Copilot](docs/agents/copilot.md)
 - [Roadmap](ROADMAP.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 - [Security](SECURITY.md) · [Publishing](docs/PUBLISHING.md)
+- [Analysis](docs/analysis/) — benchmarks, competitor & stability analysis
 - Demo: run `bash scripts/demo.sh` (record with asciinema)
+
+---
+
+<sub>Keywords: reduce Claude Code token usage · Codex `AGENTS.md` token efficiency ·
+GitHub Copilot instructions to save tokens · compress AI command/test output for
+LLMs · cross-agent token optimization CLI · one config for Claude Code, Codex and
+Copilot.</sub>
 
 ## 🌱 Development & branching
 
