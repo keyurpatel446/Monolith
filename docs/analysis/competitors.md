@@ -27,22 +27,32 @@ Where Monolith sits against the projects in the same space, and where to invest.
 - caveman leads on maturity, subagents, memory compression.
 
 ### Planning (vs spec-kit)
-- spec-kit is a far deeper SDD workflow (constitution/specify/clarify/analyze).
-- Monolith's `plan`/`tasks`/`scan` are lightweight and cross-agent; not trying to
-  match spec-kit's depth.
+- **As of v0.2.0 Monolith ships the full SDD pipeline**: `constitution →
+  specify → clarify → plan → analyze → tasks → implement` — matching spec-kit's
+  methodology.
+- Monolith's approach: CLI commands + installable slash commands, structured
+  `specs/<feature>/` artifacts, offline structural analysis. Zero new
+  dependencies.
+- spec-kit still leads on template maturity, extensions/presets ecosystem, and
+  community resources. Monolith's edge: cross-agent compilation, token
+  compression, and runtime `shrink` — none of which spec-kit offers.
 
 ## Honest positioning
 
-Monolith is **the only one that unifies all three concerns** (rules + tasks +
-runtime compression) in one dependency-free cross-agent CLI. It does **not** beat
-any specialist in that specialist's lane:
-- Not as broad as rtk at command compression.
-- Not as mature as caveman at agent-output compression.
-- Not as deep as spec-kit at planning.
+Monolith is **the only tool that unifies all four concerns** (token efficiency +
+SDD workflow + task management + runtime compression) in one dependency-free
+cross-agent CLI.
 
-**Where to invest (priority):**
-1. Close the rtk gap on the *common* commands (lint grouping, build tools,
-   shell-hooks) — highest user-visible value.
-2. Strengthen measured evidence (benchmarks.md, real-world `gain` data).
-3. Lean the marketing on *breadth + honesty + zero-deps cross-agent*, not on
-   out-compressing any single tool.
+Remaining gaps vs specialists:
+- **vs rtk**: not as broad at command compression (build tools, transparent
+  shell hooks still pending).
+- **vs caveman**: not as mature at agent-output compression (subagents, memory
+  compression).
+- **vs spec-kit**: templates less battle-tested; no extensions/presets ecosystem.
+
+**Where to invest next (priority):**
+1. SDD template quality — battle-test the spec/plan/tasks templates with real
+   projects; add more opinionated examples.
+2. Close the rtk gap on build tools and transparent shell hooks.
+3. Strengthen measured evidence (benchmarks, real-world `gain` data).
+4. Lean the marketing on *breadth + SDD + honesty + zero-deps cross-agent*.

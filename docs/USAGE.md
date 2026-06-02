@@ -25,8 +25,12 @@ PYTHONPATH=src python -m monolith ...  # run from a checkout
   agents, and any extra (custom) rules.
 - **Managed block** — the section between `<!-- monolith:start -->` and
   `<!-- monolith:end -->`. Monolith only ever edits inside these markers.
+- **Feature** — a named folder under `specs/<feature>/` containing the SDD
+  artifact set: `spec.md`, `plan.md`, `tasks.md`, `data-model.md`, `contracts/`.
+- **Constitution** — `.monolith/memory/constitution.md`: project-wide principles
+  and definition of done, read by every SDD command.
 
-## Workflow
+## Token-efficiency workflow
 
 ```bash
 monolith init                 # 1. set up settings (detects existing agent files)
@@ -42,6 +46,30 @@ monolith tier ultra          # switch (run `apply` after, or use --apply)
 monolith tier full --apply
 monolith stats               # projected savings + input cost per file
 ```
+
+## SDD workflow
+
+```bash
+monolith constitution                    # 1. scaffold .monolith/memory/constitution.md
+monolith specify user-auth               # 2. scaffold specs/user-auth/spec.md
+# fill in spec.md …
+monolith analyze user-auth               # 3. check for gaps (re-run at each step)
+monolith specify user-auth --plan        # 4. scaffold plan.md
+# fill in plan.md …
+monolith plan specs/user-auth/spec.md   # 5. parse spec into task tree
+monolith analyze user-auth               # 6. confirm full coverage
+monolith checklist user-auth             # 7. quality gate before shipping
+```
+
+Install the agent-facing slash commands once:
+
+```bash
+for cmd in constitution specify clarify analyze checklist implement; do
+  monolith hub install monolith.$cmd
+done
+```
+
+Then use `/monolith.specify`, `/monolith.clarify`, etc. directly in any agent.
 
 ## Commands
 
@@ -151,6 +179,64 @@ at runtime. The request handlers are unit-tested; the live loop is experimental.
 ### `monolith doctor`
 Checks each configured agent's file for a healthy Monolith block and reports
 `ok`/`FAIL` per agent. Exit code is non-zero if any agent is missing the block.
+
+---
+
+## SDD commands
+
+### `monolith constitution`
+Scaffolds `.monolith/memory/constitution.md` with a template for mission,
+engineering principles, and definition of done. Does nothing if the file already
+exists. Edit the file directly, or use the `/monolith.constitution` hub command
+to let an agent fill it in interactively.
+
+### `monolith specify <feature> [--plan] [--data-model] [--contracts]`
+Scaffolds `specs/<feature>/` with:
+- `spec.md` — requirements, user stories, acceptance criteria (always created)
+- `plan.md` — architecture, stack decisions (with `--plan`)
+- `data-model.md` — entity definitions, relationships (with `--data-model`)
+- `contracts/README.md` — API contract convention (with `--contracts`)
+
+Files that already exist are not overwritten. Run again with additional flags to
+add optional artifacts later.
+
+```bash
+monolith specify payments            # spec.md only
+monolith specify payments --plan --data-model --contracts   # full scaffold
+```
+
+### `monolith analyze [feature]`
+Performs a structural cross-artifact consistency check for a feature:
+- Checks that the constitution exists.
+- Verifies each pipeline artifact (`spec.md`, `plan.md`, `tasks.md`) exists and
+  is not still an unfilled template.
+- Reports optional artifacts (`data-model.md`, `contracts/`) as INFO.
+
+Findings are prefixed `OK`, `WARN`, `ERROR`, or `INFO`. Exits with code 1 if
+any ERROR is found. Omit `feature` to analyze all features under `specs/`.
+
+```bash
+monolith analyze user-auth     # single feature
+monolith analyze               # all features
+```
+
+### `monolith checklist <feature> [--write]`
+Generates a quality checklist with four sections:
+- **Spec and Planning** — artifact existence, open questions, non-goals
+- **Implementation** — acceptance criteria, edge cases, no TODOs
+- **Quality Gates** — tests, lint, doctor, analyze
+- **Review** — PR description, reviewer sign-off, CHANGELOG
+
+Checkboxes for `spec.md`, `plan.md`, and `tasks.md` are pre-checked when those
+files already exist. Use `--write` to save the checklist to
+`specs/<feature>/checklist.md` instead of printing.
+
+```bash
+monolith checklist user-auth           # print
+monolith checklist user-auth --write   # save to specs/user-auth/checklist.md
+```
+
+---
 
 ## Global flags
 
