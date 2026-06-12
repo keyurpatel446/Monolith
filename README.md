@@ -52,7 +52,9 @@ Same answer. ~⅕ the tokens. (Measured by `monolith bench`.)
 Requires Python ≥ 3.9. Dependency-free core.
 
 ```bash
-pipx install monolith-ai      # recommended (isolated)
+pipx install monolith-ai      # recommended (isolated, always on PATH)
+# or
+uv tool install monolith-ai   # if you use uv
 # or
 pip install monolith-ai
 ```
@@ -68,19 +70,23 @@ pip install -e .              # or: pip install -e ".[bench]" for exact token co
 
 ## 🚀 Quickstart
 
-### Claude Code (most common — see [full guide](docs/agents/claude-code.md))
+One command sets up your project — it detects your agents, writes the rules,
+and verifies them (`init` + `apply` + `doctor` in one go):
 
 ```bash
-monolith init && monolith apply --agent claude && monolith doctor
+monolith setup
 ```
 
-### All 7 agents at once
+Only use Claude Code? Scope it ([full guide](docs/agents/claude-code.md)):
 
 ```bash
-monolith init                 # detect agents, create .monolith/settings.json
-monolith apply --agent all    # write all 7 config files in one go
-monolith doctor               # verify every agent picked up the rules
-monolith stats                # see projected savings + input cost
+monolith setup --agent claude
+```
+
+Then check your projected savings:
+
+```bash
+monolith stats
 ```
 
 ### Spec-Driven Development
@@ -94,15 +100,10 @@ monolith analyze user-auth                 # check spec ↔ plan ↔ tasks consi
 monolith checklist user-auth               # quality gate before shipping
 ```
 
-Install the SDD slash commands so any agent can run the workflow:
+Install all six SDD slash commands with one command:
 
 ```bash
-monolith hub install monolith.constitution
-monolith hub install monolith.specify
-monolith hub install monolith.clarify
-monolith hub install monolith.analyze
-monolith hub install monolith.checklist
-monolith hub install monolith.implement
+monolith hub install sdd
 ```
 
 ---
@@ -123,9 +124,7 @@ pipx install monolith-ai
 **2. Set up your project** (run once per repo)
 
 ```bash
-monolith init                  # creates .monolith/settings.json
-monolith apply --agent claude  # writes token rules into CLAUDE.md
-monolith doctor                # confirms: "[ok ] Claude Code — managed block present"
+monolith setup --agent claude   # writes token rules into CLAUDE.md + verifies
 ```
 
 Open Claude Code in the project — rules are active immediately. No app config needed.
@@ -133,13 +132,8 @@ Open Claude Code in the project — rules are active immediately. No app config 
 **3. Install slash commands** (optional but recommended)
 
 ```bash
-# SDD workflow — use /monolith.specify, /monolith.clarify, etc. inside Claude Code
-monolith hub install monolith.constitution
-monolith hub install monolith.specify
-monolith hub install monolith.clarify
-monolith hub install monolith.analyze
-monolith hub install monolith.checklist
-monolith hub install monolith.implement
+# SDD workflow — /monolith.specify, /monolith.clarify, etc. inside Claude Code
+monolith hub install sdd
 
 # Utilities
 monolith hub install concise-commit   # /concise-commit  — one-line commit message
@@ -162,7 +156,7 @@ monolith run -- git status       # drops hint noise
 ```
 
 > For Cursor, Windsurf, Copilot, Codex, Gemini CLI, or Aider — see
-> [docs/agents/](docs/agents/) or just run `monolith apply --agent all`
+> [docs/agents/](docs/agents/) or just run `monolith setup --agent all`
 > to write all 7 config files at once.
 
 ---
@@ -173,7 +167,8 @@ monolith run -- git status       # drops hint noise
 
 | Command | Description |
 |---------|-------------|
-| `monolith init` | Detect agent files and create `.monolith/settings.json`. |
+| `monolith setup [--agent <agent>\|all] [--tier <tier>]` | One-shot onboarding: `init` + `apply` + `doctor`. |
+| `monolith init [--agent <agent>\|all]` | Detect agent files and create `.monolith/settings.json`. |
 | `monolith apply [--agent all\|claude\|codex\|copilot\|config]` | Compile directives into agent configs (idempotent). |
 | `monolith tier [name] [--apply]` | Show or switch the active compression tier. |
 | `monolith stats` | Projected + measured reduction and input cost per file. |
@@ -203,7 +198,7 @@ monolith run -- git status       # drops hint noise
 
 | Command | Description |
 |---------|-------------|
-| `monolith hub list\|search\|show\|install` | Browse and install curated agent resources (SDD commands + utilities). |
+| `monolith hub list\|search\|show\|install` | Browse and install curated agent resources. `install sdd` installs the whole SDD bundle. |
 | `monolith shrink [file] [--level lite\|full\|ultra]` | Compress verbose output deterministically. |
 | `monolith run -- <command>` | Run a command, compress its output, save full output on failure. |
 | `monolith gain` | Show cumulative token savings from `run`. |

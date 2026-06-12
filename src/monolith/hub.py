@@ -258,6 +258,20 @@ CATALOG: List[Resource] = [
 ]
 
 
+#: Named bundles — install several resources with one command, e.g.
+#: ``monolith hub install sdd``.
+BUNDLES: Dict[str, List[str]] = {
+    "sdd": [
+        "monolith.constitution",
+        "monolith.specify",
+        "monolith.clarify",
+        "monolith.analyze",
+        "monolith.checklist",
+        "monolith.implement",
+    ],
+}
+
+
 def find(resource_id: str) -> Resource | None:
     """Return the catalog resource with ``resource_id`` (``None`` if absent)."""
     for resource in CATALOG:

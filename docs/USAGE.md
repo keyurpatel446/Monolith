@@ -33,6 +33,12 @@ PYTHONPATH=src python -m monolith ...  # run from a checkout
 ## Token-efficiency workflow
 
 ```bash
+monolith setup                # init + apply + doctor in one command
+```
+
+Or step by step:
+
+```bash
 monolith init                 # 1. set up settings (detects existing agent files)
 monolith apply --agent all    # 2. write the directives into every agent file
 monolith doctor               # 3. verify the block landed everywhere
@@ -64,19 +70,24 @@ monolith checklist user-auth             # 7. quality gate before shipping
 Install the agent-facing slash commands once:
 
 ```bash
-for cmd in constitution specify clarify analyze checklist implement; do
-  monolith hub install monolith.$cmd
-done
+monolith hub install sdd     # bundle: all six monolith.* commands
 ```
 
 Then use `/monolith.specify`, `/monolith.clarify`, etc. directly in any agent.
 
 ## Commands
 
-### `monolith init [--force]`
+### `monolith setup [--agent <agent>|all] [--tier <tier>]`
+One-shot onboarding: writes settings (scoped to `--agent` if given, otherwise
+detected agent files, otherwise all), applies the directives, and runs the
+doctor. Safe to re-run; an explicit `--agent`/`--tier` updates existing
+settings.
+
+### `monolith init [--force] [--agent <agent>|all]`
 Detects which agent files already exist in the project and writes
-`.monolith/settings.json`. If none exist, all three agents are targeted by
-default. Use `--force` to overwrite existing settings.
+`.monolith/settings.json`. If none exist, all agents are targeted by
+default; `--agent` scopes the settings to one agent. Use `--force` to
+overwrite existing settings.
 
 ### `monolith apply [--agent {all,claude,codex,copilot,config}]`
 Compiles the active tier into the target files. Default `config` uses the
@@ -134,7 +145,10 @@ Idempotent: tasks de-dupe by title, rules by text.
 Browse and install curated, token-frugal agent resources (slash commands and
 prompts) that ship inside Monolith. `install` writes the asset into each target
 agent's conventional path (e.g. `.claude/commands/`, `.codex/prompts/`,
-`.github/prompts/`); pass `--agent <key>` to install for one agent only.
+`.github/prompts/`). By default it targets the agents in your settings (or all
+the resource supports when no settings exist); pass `--agent <key>` for one
+agent or `--agent all` for everything. `install` also accepts a bundle name —
+`monolith hub install sdd` installs all six SDD workflow commands at once.
 
 ### `monolith shrink [file] [--level lite|full|ultra]`
 Compresses verbose text/output deterministically (no model). Reads a file or
@@ -176,9 +190,10 @@ Runs the **experimental** MCP server over stdio (newline-delimited JSON-RPC),
 exposing a single `shrink` tool so an MCP-capable agent can compress tool output
 at runtime. The request handlers are unit-tested; the live loop is experimental.
 
-### `monolith doctor`
+### `monolith doctor [--agent <agent>|all|config]`
 Checks each configured agent's file for a healthy Monolith block and reports
 `ok`/`FAIL` per agent. Exit code is non-zero if any agent is missing the block.
+Defaults to the agents in your settings; `--agent` narrows or widens the check.
 
 ---
 

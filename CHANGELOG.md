@@ -6,6 +6,29 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-06-12
+
+### Added
+- **`monolith setup [--agent <agent>|all] [--tier <tier>]`** — one-shot
+  onboarding that replaces the `init` + `apply` + `doctor` chain with a single
+  command. `monolith setup --agent claude` sets up Claude Code end-to-end.
+- **Hub bundles**: `monolith hub install sdd` installs all six SDD workflow
+  commands at once (previously six separate `hub install` invocations).
+  `monolith hub list` now shows available bundles.
+- `monolith init --agent <agent>|all` — scope settings to one agent at init time.
+- `monolith doctor --agent <agent>|all|config` — narrow or widen the check.
+
+### Changed
+- `monolith hub install` now defaults to the agents in `.monolith/settings.json`
+  (when present) instead of writing config directories for all 7 agents.
+  Pass `--agent all` for the old behaviour.
+
+### Fixed
+- The documented Claude quickstart no longer ended in failure: `monolith init`
+  in a repo with no agent files targeted all 7 agents, so
+  `apply --agent claude && doctor` reported six `FAIL` lines and exited 1.
+  `setup --agent claude` (or `init --agent claude`) keeps `doctor` green.
+
 ## [0.2.1] - 2026-06-02
 
 ### Added

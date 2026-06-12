@@ -3,6 +3,7 @@
 Sub-commands
 ------------
     init            detect agents in the repo and create .monolith/settings.json
+    setup           one-shot onboarding: init + apply + doctor
     apply           compile the directives into each agent's native config file
     tier            show or switch the active compression tier
     stats           show projected + last-measured token savings for the active tier
@@ -92,6 +93,20 @@ def _resolve_agents(requested: str | None, settings: dict) -> List[str]:
 # Command handlers. Each takes the parsed args and returns a process exit code.
 # ---------------------------------------------------------------------------
 
+def _seed_agents(root: str, requested: str | None) -> List[str]:
+    """Pick the agent list for a fresh setup.
+
+    Explicit ``--agent`` wins; otherwise use whichever agent files already
+    exist, falling back to all agents so a fresh repo gets full coverage.
+    """
+    if requested == "all":
+        return all_keys()
+    if requested:
+        return [requested]
+    detected = [key for key in all_keys() if get_compiler(key).file_present(root)]
+    return detected or all_keys()
+
+
 def cmd_init(args: argparse.Namespace) -> int:
     """Create ``.monolith/settings.json``, pre-seeding any detected agents."""
     root = args.root
@@ -102,23 +117,39 @@ def cmd_init(args: argparse.Namespace) -> int:
         )
         return 0
 
-    # Seed the agent list from whichever agent files already exist; otherwise
-    # target all of them so a fresh repo gets full coverage.
-    detected = [key for key in all_keys() if get_compiler(key).file_present(root)]
-    agents = detected or all_keys()
-
+    agents = _seed_agents(root, args.agent)
     settings = default_settings(agents=agents)
     path = save_settings(settings, root)
 
     print("Initialized Monolith.")
     print(f"  settings: {path}")
     print(f"  tier:     {settings['tier']}")
-    if detected:
-        print(f"  detected agents: {', '.join(detected)}")
-    else:
-        print(f"  no agent files found; targeting all: {', '.join(agents)}")
+    print(f"  agents:   {', '.join(agents)}")
     print("\nNext: `monolith apply` to write the rules into each agent's config.")
+    print("(Or do everything in one go next time: `monolith setup`.)")
     return 0
+
+
+def cmd_setup(args: argparse.Namespace) -> int:
+    """One-shot onboarding: init + apply + doctor in a single command."""
+    root = args.root
+    settings = load_settings(root)
+    if args.agent or not settings_exist(root):
+        settings["agents"] = _seed_agents(root, args.agent)
+    if args.tier:
+        settings["tier"] = args.tier
+    save_settings(settings, root)
+
+    code = cmd_apply(argparse.Namespace(root=root, agent="config"))
+    if code != 0:
+        return code
+    print()
+    code = cmd_doctor(argparse.Namespace(root=root, agent="config"))
+    if code == 0:
+        print("\nNext steps (optional):")
+        print("  monolith hub install sdd   # spec-driven development slash commands")
+        print("  monolith stats             # projected savings + input cost")
+    return code
 
 
 def cmd_apply(args: argparse.Namespace) -> int:
@@ -380,6 +411,9 @@ def cmd_hub(args: argparse.Namespace) -> int:
         print("Resource hub:")
         for resource in hub_module.CATALOG:
             print(f"  {resource.id:<16} [{resource.kind}] {resource.summary}")
+        print("\nBundles (install several at once):")
+        for name, ids in hub_module.BUNDLES.items():
+            print(f"  {name:<16} [bundle] {', '.join(ids)}")
         return 0
 
     if args.action == "search":
@@ -395,6 +429,13 @@ def cmd_hub(args: argparse.Namespace) -> int:
         return 0
 
     if args.action == "show":
+        bundle = hub_module.BUNDLES.get(args.value or "")
+        if bundle is not None:
+            print(f"{args.value}  [bundle]")
+            print("  installs:")
+            for rid in bundle:
+                print(f"    {rid}")
+            return 0
         resource = hub_module.find(args.value or "")
         if resource is None:
             print(f"error: no resource with id {args.value!r}", file=sys.stderr)
@@ -406,20 +447,38 @@ def cmd_hub(args: argparse.Namespace) -> int:
         print(resource.body)
         return 0
 
-    # action == "install"
-    resource = hub_module.find(args.value or "")
-    if resource is None:
-        print(f"error: no resource with id {args.value!r}", file=sys.stderr)
-        return 1
-    agents = resource.agents() if args.agent in (None, "all") else [args.agent]
-    written = hub_module.install(resource, args.root, agents)
-    if not written:
-        print(f"Nothing installed (resource has no target for: {args.agent}).")
-        return 1
-    print(f"Installed '{resource.id}':")
-    for path in written:
-        print(f"  + {path}")
-    return 0
+    # action == "install" — a single resource id or a bundle name.
+    requested = args.value or ""
+    ids = hub_module.BUNDLES.get(requested, [requested])
+    resources = []
+    for rid in ids:
+        resource = hub_module.find(rid)
+        if resource is None:
+            print(f"error: no resource with id {rid!r}", file=sys.stderr)
+            return 1
+        resources.append(resource)
+
+    # Agent scope: explicit flag > project settings > all the resource supports.
+    if args.agent not in (None, "all", "config"):
+        agents = [args.agent]
+    elif args.agent == "config" or (args.agent is None and settings_exist(args.root)):
+        agents = list(load_settings(args.root).get("agents", all_keys()))
+    else:
+        agents = None  # every agent each resource supports
+
+    wrote_any = False
+    for resource in resources:
+        written = hub_module.install(
+            resource, args.root, agents if agents is not None else resource.agents()
+        )
+        if not written:
+            print(f"Nothing installed for '{resource.id}' (no target for: {args.agent}).")
+            continue
+        wrote_any = True
+        print(f"Installed '{resource.id}':")
+        for path in written:
+            print(f"  + {path}")
+    return 0 if wrote_any else 1
 
 
 def cmd_shrink(args: argparse.Namespace) -> int:
@@ -693,7 +752,7 @@ def cmd_doctor(args: argparse.Namespace) -> int:
 
     print(f"Monolith doctor (tier: {settings['tier']})")
     all_ok = True
-    for key in _resolve_agents("config", settings):
+    for key in _resolve_agents(getattr(args, "agent", "config"), settings):
         compiler = get_compiler(key)
         if compiler is None:
             print(f"  ? unknown agent in settings: {key}")
@@ -730,7 +789,28 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_init = sub.add_parser("init", help="create .monolith/settings.json")
     p_init.add_argument("--force", action="store_true", help="overwrite existing settings")
+    p_init.add_argument(
+        "--agent",
+        choices=all_keys() + ["all"],
+        default=None,
+        help="target only this agent (default: detect existing files, else all)",
+    )
     p_init.set_defaults(func=cmd_init)
+
+    p_setup = sub.add_parser(
+        "setup", help="one-shot onboarding: init + apply + doctor"
+    )
+    p_setup.add_argument(
+        "--agent",
+        choices=all_keys() + ["all"],
+        default=None,
+        help="target only this agent (default: detect existing files, else all)",
+    )
+    p_setup.add_argument(
+        "--tier", choices=tier_names(), default=None,
+        help=f"compression tier (default: {DEFAULT_TIER})",
+    )
+    p_setup.set_defaults(func=cmd_setup)
 
     p_apply = sub.add_parser("apply", help="write the directives into agent configs")
     p_apply.add_argument(
@@ -845,9 +925,10 @@ def build_parser() -> argparse.ArgumentParser:
     p_hub.add_argument("value", nargs="?", help="query (search) or resource id (show/install)")
     p_hub.add_argument(
         "--agent",
-        choices=all_keys() + ["all"],
-        default="all",
-        help="target agent for install (default: all the resource supports)",
+        choices=all_keys() + ["all", "config"],
+        default=None,
+        help="target agent for install (default: agents from settings, "
+             "else all the resource supports)",
     )
     p_hub.set_defaults(func=cmd_hub)
 
@@ -877,6 +958,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_mcp.set_defaults(func=cmd_mcp)
 
     p_doctor = sub.add_parser("doctor", help="verify agent configs are set up")
+    p_doctor.add_argument(
+        "--agent",
+        choices=all_keys() + ["all", "config"],
+        default="config",
+        help="which agent(s) to check (default: those in settings)",
+    )
     p_doctor.set_defaults(func=cmd_doctor)
 
     return parser
