@@ -26,6 +26,8 @@ your project/
 ```bash
 pipx install monolith-ai      # recommended: isolated, always on PATH
 # or
+uv tool install monolith-ai   # if you use uv
+# or
 pip install monolith-ai
 ```
 
@@ -39,24 +41,27 @@ monolith --version
 
 ## Step 2 — Set up your project
 
-Run these once in the root of any project you use with Claude Code:
+Run this once in the root of any project you use with Claude Code:
 
 ```bash
-monolith init                  # creates .monolith/settings.json
-monolith apply --agent claude  # writes token rules into CLAUDE.md
-monolith doctor                # confirms Claude Code picked it up
+monolith setup --agent claude
 ```
 
-Expected `doctor` output:
+It creates `.monolith/settings.json`, writes the token rules into `CLAUDE.md`,
+and verifies the result. Expected output ends with:
 
 ```
-[ok ] Claude Code     CLAUDE.md  (managed block present)
+[ok ] Claude Code    CLAUDE.md  (managed block present)
+
+All configured agents have the Monolith block.
 ```
 
 That's it. Open Claude Code in this project — the rules are active immediately.
 
 > **All agents at once:** if you also use Copilot, Cursor, Codex, etc., run
-> `monolith apply --agent all` instead to write all 7 config files in one go.
+> `monolith setup --agent all` instead to write all 7 config files in one go.
+> (Prefer separate steps? `monolith init`, `monolith apply`, and
+> `monolith doctor` still work individually.)
 
 ---
 
@@ -84,15 +89,10 @@ monolith stats
 Monolith ships curated slash commands that install straight into
 `.claude/commands/` — they appear as `/command-name` inside Claude Code.
 
-### SDD workflow commands (recommended — install all at once)
+### SDD workflow commands (recommended — one bundle installs all six)
 
 ```bash
-monolith hub install monolith.constitution
-monolith hub install monolith.specify
-monolith hub install monolith.clarify
-monolith hub install monolith.analyze
-monolith hub install monolith.checklist
-monolith hub install monolith.implement
+monolith hub install sdd
 ```
 
 Then in Claude Code:

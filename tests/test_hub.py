@@ -4,7 +4,7 @@ import os
 import tempfile
 import unittest
 
-from monolith.hub import CATALOG, find, install, search
+from monolith.hub import BUNDLES, CATALOG, find, install, search
 
 
 class HubTests(unittest.TestCase):
@@ -20,6 +20,15 @@ class HubTests(unittest.TestCase):
         for resource in CATALOG:
             self.assertTrue(resource.body.strip())
             self.assertTrue(resource.targets)
+
+    def test_bundles_reference_real_resources(self):
+        ids = {r.id for r in CATALOG}
+        for bundle, members in BUNDLES.items():
+            self.assertTrue(members)
+            for member in members:
+                self.assertIn(member, ids)
+            # A bundle name must not shadow a resource id.
+            self.assertNotIn(bundle, ids)
 
     def test_find_and_search(self):
         self.assertIsNotNone(find("concise-commit"))

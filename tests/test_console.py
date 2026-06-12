@@ -34,6 +34,29 @@ class ConsoleTests(unittest.TestCase):
             self.assertTrue(settings_exist(root))
             self.assertIn("Initialized Monolith", out)
 
+    def test_init_agent_flag_scopes_targets(self):
+        with tempfile.TemporaryDirectory() as root:
+            code, _ = run(["--root", root, "init", "--agent", "claude"])
+            self.assertEqual(code, 0)
+            self.assertEqual(load_settings(root)["agents"], ["claude"])
+
+    def test_setup_single_agent_is_green_in_one_command(self):
+        with tempfile.TemporaryDirectory() as root:
+            code, out = run(["--root", root, "setup", "--agent", "claude"])
+            self.assertEqual(code, 0)
+            self.assertTrue(os.path.exists(os.path.join(root, "CLAUDE.md")))
+            self.assertEqual(load_settings(root)["agents"], ["claude"])
+            self.assertIn("All configured agents", out)
+            self.assertNotIn("FAIL", out)
+
+    def test_setup_all_agents_and_tier(self):
+        with tempfile.TemporaryDirectory() as root:
+            code, out = run(["--root", root, "setup", "--agent", "all", "--tier", "ultra"])
+            self.assertEqual(code, 0)
+            self.assertEqual(load_settings(root)["tier"], "ultra")
+            self.assertTrue(os.path.exists(os.path.join(root, "AGENTS.md")))
+            self.assertIn("All configured agents", out)
+
     def test_apply_writes_all_three_agents(self):
         with tempfile.TemporaryDirectory() as root:
             run(["--root", root, "init"])
@@ -155,6 +178,34 @@ class Phase45Tests(unittest.TestCase):
     def test_hub_install_unknown_resource_errors(self):
         with tempfile.TemporaryDirectory() as root:
             self.assertEqual(run(["--root", root, "hub", "install", "nope"])[0], 1)
+
+    def test_hub_install_sdd_bundle(self):
+        with tempfile.TemporaryDirectory() as root:
+            code, out = run(["--root", root, "hub", "install", "sdd", "--agent", "claude"])
+            self.assertEqual(code, 0)
+            commands_dir = os.path.join(root, ".claude", "commands")
+            for name in ("constitution", "specify", "clarify", "analyze",
+                         "checklist", "implement"):
+                self.assertTrue(
+                    os.path.exists(os.path.join(commands_dir, f"monolith.{name}.md"))
+                )
+
+    def test_hub_install_respects_settings_agents(self):
+        with tempfile.TemporaryDirectory() as root:
+            run(["--root", root, "init", "--agent", "claude"])
+            code, _ = run(["--root", root, "hub", "install", "concise-commit"])
+            self.assertEqual(code, 0)
+            self.assertTrue(
+                os.path.exists(os.path.join(root, ".claude", "commands", "concise-commit.md"))
+            )
+            # Only the configured agent's directory is created.
+            self.assertFalse(os.path.exists(os.path.join(root, ".codex")))
+
+    def test_hub_list_shows_bundles(self):
+        code, out = run(["hub", "list"])
+        self.assertEqual(code, 0)
+        self.assertIn("sdd", out)
+        self.assertIn("bundle", out)
 
     def test_scan_dry_run_then_apply(self):
         marker = "@" + "monolith:"

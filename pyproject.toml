@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "monolith-ai"
-version = "0.2.1"
+version = "0.2.2"
 description = "One ruleset for Claude Code, Codex, Copilot, Cursor, Windsurf, Gemini & Aider — token efficiency + spec-driven development in one CLI."
 readme = "README.md"
 requires-python = ">=3.9"
