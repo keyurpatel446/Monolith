@@ -6,6 +6,27 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-06-12
+
+First stable release. The CLI surface (command names, flags, and the on-disk
+layout under `.monolith/`) is now considered stable and follows semantic
+versioning — breaking changes only in a future 2.0.
+
+### Added
+- Friendlier first-run guidance: running bare `monolith` now points new users
+  at `monolith setup`, and `monolith doctor` on an unconfigured project tells
+  you to run `monolith setup` instead of `apply`.
+
+### Changed
+- `scripts/demo.sh` now showcases the one-command `monolith setup` flow and
+  `monolith hub install sdd`.
+- Documented the supported install paths (`pipx`, `uv`, `pip`) and recorded
+  Homebrew/conda-forge as planned distribution channels in the roadmap.
+
+### Notes
+- Builds on the onboarding work from 0.2.2 (`monolith setup`, hub bundles,
+  settings-scoped `hub install`).
+
 ## [0.2.2] - 2026-06-12
 
 ### Added

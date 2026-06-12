@@ -91,6 +91,17 @@ class ConsoleTests(unittest.TestCase):
             self.assertEqual(code, 0)
             self.assertIn("All configured agents", out)
 
+    def test_doctor_unconfigured_suggests_setup(self):
+        with tempfile.TemporaryDirectory() as root:
+            code, out = run(["--root", root, "doctor"])
+            self.assertEqual(code, 1)
+            self.assertIn("monolith setup", out)
+
+    def test_bare_invocation_hints_setup(self):
+        code, out = run([])
+        self.assertEqual(code, 0)
+        self.assertIn("monolith setup", out)
+
     def test_stats_reports_projection(self):
         with tempfile.TemporaryDirectory() as root:
             run(["--root", root, "init"])

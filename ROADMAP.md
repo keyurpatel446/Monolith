@@ -87,6 +87,33 @@ plan.
   `monolith.analyze`, `monolith.checklist`, `monolith.implement`.
 - All 74 existing tests pass unchanged.
 
+### Phase 7 — Onboarding & 1.0 ✅ (v1.0.0)
+- One-command setup: `monolith setup [--agent <agent>|all] [--tier]` runs
+  `init` + `apply` + `doctor` in a single step.
+- Hub bundles: `monolith hub install sdd` installs the whole SDD command set;
+  `hub install` now defaults to the agents in `.monolith/settings.json`.
+- `--agent` scoping on `init`/`doctor`; friendlier first-run guidance (bare
+  `monolith` and a failing `doctor` on an unconfigured project both point at
+  `monolith setup`).
+- Fixed the documented Claude quickstart that previously ended in six `doctor`
+  failures.
+- **1.0.0 stability commitment**: the CLI surface (command names, flags, and
+  on-disk layout under `.monolith/`) is now considered stable and will follow
+  semantic versioning — breaking changes only in a future 2.0.
+
+## Distribution
+
+- **PyPI via Trusted Publishing** ✅ — every merge to `master` that bumps the
+  version tags a release and publishes the wheel + sdist (OIDC, no stored
+  token).
+- **Demo GIF** — `scripts/demo.sh` drives the full flow; record with
+  `asciinema rec -c "bash scripts/demo.sh"` then convert with `agg`.
+- **Homebrew tap** (planned) — Monolith is dependency-free, so a
+  `Language::Python::Virtualenv` formula is trivial; it needs a companion
+  `homebrew-tap` repository to host `brew install keyurpatel446/tap/monolith`.
+- **conda-forge** (planned) — submit a feedstock so `conda install monolith-ai`
+  works for non-pip users.
+
 ## v0.3.0 (planned)
 
 - **SDD depth** — battle-test spec/plan/tasks templates with real projects;
