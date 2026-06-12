@@ -764,7 +764,10 @@ def cmd_doctor(args: argparse.Namespace) -> int:
         print(f"  [{mark}] {compiler.label:<14} {report['path']}  ({report['reason']})")
 
     if not all_ok:
-        print("\nSome agents are not set up. Run `monolith apply`.")
+        if not settings_exist(root):
+            print("\nThis project isn't set up yet. Run `monolith setup`.")
+        else:
+            print("\nSome agents are not set up. Run `monolith apply`.")
         return 1
     print("\nAll configured agents have the Monolith block.")
     return 0
@@ -984,6 +987,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if not getattr(args, "command", None):
         parser.print_help()
+        print("\nNew here? Run `monolith setup` to configure this project in one step.")
         return 0
 
     try:

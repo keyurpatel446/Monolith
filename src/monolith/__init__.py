@@ -13,4 +13,4 @@ from importlib import metadata as _metadata
 try:
     __version__ = _metadata.version("monolith-ai")
 except _metadata.PackageNotFoundError:  # pragma: no cover - source-tree fallback
-    __version__ = "0.1.1"
+    __version__ = "1.0.0"
