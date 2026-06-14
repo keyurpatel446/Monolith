@@ -6,6 +6,29 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+### Changed
+- `monolith tasks-to-issues` is now idempotent: it skips tasks whose title
+  already exists as an open issue, so re-running no longer creates duplicates.
+
+### Internal (architecture / SOLID)
+- Extracted the GitHub Issues HTTP client out of the console into
+  `monolith/issues.py` (was inline argparse logic).
+- Extracted cross-artifact analysis + checklist generation into
+  `monolith/analysis.py`; `analyze_feature` now returns structured
+  `Finding`/`Severity` values instead of severity-prefixed strings.
+- `monolith shrink` levels are now a data-driven registry (`_LEVEL_SPECS`)
+  rather than `if level in (...)` branches — adding a level is a table entry.
+- The agent roster is single-sourced from the compiler registry: hub install
+  paths derive from each compiler's `hub_path`, removing the duplicate table
+  in `hub.py`.
+- Deduplicated the four copies of the `reduction` formula into
+  `tokens.safe_reduction`.
+- Hardened JSON loading: corrupt settings fall back to defaults; a corrupt task
+  store raises a clear error instead of silently clobbering data.
+- Promoted `tasks._extract_tags` to the public `extract_tags` (no more
+  cross-module private import from `scan.py`).
+- Fixed a dead always-true filter in the grep/find output compressor.
+
 ## [1.0.0] - 2026-06-12
 
 First stable release. The CLI surface (command names, flags, and the on-disk

@@ -19,7 +19,7 @@ import time
 from dataclasses import dataclass
 from typing import List, Sequence, Tuple
 
-from monolith.tokens import count_tokens, counter_name
+from monolith.tokens import count_tokens, counter_name, safe_reduction
 
 STATS_DIR = ".monolith"
 STATS_FILE = "stats.json"
@@ -109,9 +109,7 @@ class SampleResult:
     @property
     def reduction(self) -> float:
         """Fractional token reduction for this sample (0..1)."""
-        if self.verbose_tokens == 0:
-            return 0.0
-        return 1.0 - (self.concise_tokens / self.verbose_tokens)
+        return safe_reduction(self.verbose_tokens, self.concise_tokens)
 
 
 @dataclass
@@ -133,9 +131,7 @@ class BenchmarkReport:
     @property
     def reduction(self) -> float:
         """Corpus-wide fractional reduction (weighted by token volume)."""
-        if self.baseline_tokens == 0:
-            return 0.0
-        return 1.0 - (self.optimized_tokens / self.baseline_tokens)
+        return safe_reduction(self.baseline_tokens, self.optimized_tokens)
 
     def to_dict(self) -> dict:
         """Serialise the headline numbers for ``.monolith/stats.json``."""

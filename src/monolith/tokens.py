@@ -58,6 +58,17 @@ def count_tokens(text: str) -> int:
     return _heuristic_count(text)
 
 
+def safe_reduction(before_tokens: int, after_tokens: int) -> float:
+    """Fractional reduction (0..1) of ``after`` vs ``before``.
+
+    Returns 0.0 when ``before`` is 0 so callers never divide by zero. Shared by
+    every result type that reports a reduction (shrink, run, benchmark).
+    """
+    if before_tokens == 0:
+        return 0.0
+    return 1.0 - (after_tokens / before_tokens)
+
+
 def counter_name() -> str:
     """Return a label identifying which counter is active.
 

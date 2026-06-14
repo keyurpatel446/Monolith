@@ -7,6 +7,8 @@ for guaranteed inclusion on every session.
 
 from __future__ import annotations
 
+import os
+
 from monolith.adapters import register
 from monolith.adapters.compiler import Compiler
 
@@ -16,6 +18,7 @@ class AiderCompiler(Compiler):
     key = "aider"
     label = "Aider"
     target_path = "CONVENTIONS.md"
+    command_dir = os.path.join(".aider", "instructions")
 
     def preamble(self) -> str:
         return (

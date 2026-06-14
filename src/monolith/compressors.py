@@ -195,9 +195,10 @@ def _compress_grepfind(argv: Sequence[str], text: str) -> str:
             return passthrough
         out: List[str] = []
         for f, matches in groups.items():
-            out.append(f"{f} ({len(matches)}):" if f else "")
+            if f:
+                out.append(f"{f} ({len(matches)}):")
             out.extend(f"  {m}" for m in matches)
-        grouped = "\n".join(ln for ln in out if ln != "" or True)
+        grouped = "\n".join(out)
 
     # Don't expand: only use the grouped form if it's actually smaller.
     return grouped if len(grouped) < len(passthrough) else passthrough

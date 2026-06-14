@@ -22,11 +22,11 @@ import os
 import subprocess
 import time
 from dataclasses import dataclass
-from typing import List, Sequence
+from typing import Sequence
 
 from monolith.compressors import compress_for
 from monolith.shrink import DEFAULT_LEVEL
-from monolith.tokens import count_tokens
+from monolith.tokens import count_tokens, safe_reduction
 
 TEE_DIR = os.path.join(".monolith", "tee")
 GAIN_FILE = os.path.join(".monolith", "gain.json")
@@ -45,9 +45,7 @@ class RunResult:
 
     @property
     def reduction(self) -> float:
-        if self.before_tokens == 0:
-            return 0.0
-        return 1.0 - (self.after_tokens / self.before_tokens)
+        return safe_reduction(self.before_tokens, self.after_tokens)
 
 
 def _save_tee(raw: str, root: str, argv: Sequence[str]) -> str:

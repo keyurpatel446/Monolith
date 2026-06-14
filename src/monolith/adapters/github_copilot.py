@@ -14,6 +14,11 @@ class GitHubCopilotCompiler(Compiler):
     label = "GitHub Copilot"
     # os.path.join keeps the separator correct on every platform.
     target_path = os.path.join(".github", "copilot-instructions.md")
+    command_dir = os.path.join(".github", "prompts")
+
+    def hub_path(self, name: str) -> str:
+        # Copilot expects the ``.prompt.md`` suffix on prompt files.
+        return os.path.join(self.command_dir, f"{name}.prompt.md")
 
     def preamble(self) -> str:
         return (

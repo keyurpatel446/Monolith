@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 from monolith.adapters import register
 from monolith.adapters.compiler import Compiler
 
@@ -11,6 +13,7 @@ class WindsurfCompiler(Compiler):
     key = "windsurf"
     label = "Windsurf"
     target_path = ".windsurfrules"
+    command_dir = os.path.join(".windsurf", "rules")
 
     def preamble(self) -> str:
         return (

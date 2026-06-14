@@ -51,8 +51,13 @@ def load_settings(root: str = ".") -> dict:
     path = settings_path(root)
     if not os.path.exists(path):
         return default_settings()
-    with open(path, "r", encoding="utf-8") as handle:
-        stored: Mapping = json.load(handle)
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            stored: Mapping = json.load(handle)
+    except (json.JSONDecodeError, OSError):
+        # Settings regenerate from defaults; a corrupt file should not crash the
+        # CLI. (Tasks differ — see load_tasks — because they are not regenerable.)
+        return default_settings()
     merged = default_settings()
     merged.update(stored)
     return merged
