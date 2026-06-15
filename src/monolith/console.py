@@ -32,20 +32,19 @@ point declared in ``pyproject.toml``.
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import signal
 import subprocess
 import sys
-import urllib.error
-import urllib.request
 from typing import List, Sequence
 
 from monolith import __version__
 from monolith.adapters import all_keys, get_compiler
 from monolith.benchmark import load_last_report, run_benchmark, save_report
 from monolith.compression import DEFAULT_TIER, get_tier, tier_names
+from monolith import analysis as analysis_module
 from monolith import hub as hub_module
+from monolith import issues as issues_module
 from monolith.mcp_server import serve as mcp_serve
 from monolith.runner import load_gain, run_command
 from monolith.scan import apply_found, scan_repo
@@ -638,9 +637,9 @@ def cmd_analyze(args: argparse.Namespace) -> int:
     for feature in features:
         print(f"{'─' * 40}")
         print(f"Feature: {feature}")
-        for finding in workflow_module.analyze_feature(root, feature):
+        for finding in analysis_module.analyze_feature(root, feature):
             print(f"  {finding}")
-            if finding.startswith("ERROR"):
+            if finding.severity is analysis_module.Severity.ERROR:
                 errors += 1
         print()
 
@@ -654,7 +653,7 @@ def cmd_checklist(args: argparse.Namespace) -> int:
     """Generate or write a quality checklist for a feature."""
     root = args.root
     feature = args.feature
-    text = workflow_module.generate_checklist(root, feature)
+    text = analysis_module.generate_checklist(root, feature)
 
     if args.write:
         out_path = workflow_module.artifact_path(root, feature, "checklist.md")
@@ -668,7 +667,11 @@ def cmd_checklist(args: argparse.Namespace) -> int:
 
 
 def cmd_tasks_to_issues(args: argparse.Namespace) -> int:
-    """Push todo/doing tasks to GitHub Issues. Requires GITHUB_TOKEN env var."""
+    """Push todo/doing tasks to GitHub Issues. Requires GITHUB_TOKEN env var.
+
+    Thin adapter: env/IO and presentation here, HTTP client in
+    :mod:`monolith.issues`. Idempotent — titles already open are skipped.
+    """
     token = os.environ.get("GITHUB_TOKEN", "").strip()
     if not token:
         print("error: GITHUB_TOKEN environment variable not set", file=sys.stderr)
@@ -680,64 +683,35 @@ def cmd_tasks_to_issues(args: argparse.Namespace) -> int:
         print("No tasks found. Run `monolith plan <prd>` first.")
         return 0
 
-    target_statuses = {"todo", "doing"} if not args.done else {"todo", "doing", "done"}
-    to_push = [t for t in tasks if t.status in target_statuses]
-    if not to_push:
+    result = issues_module.push_tasks(
+        tasks,
+        args.repo,
+        token,
+        label=args.label,
+        spec_link=args.spec_link,
+        include_done=args.done,
+    )
+
+    for line in result.created:
+        print(f"  + {line}")
+    for title in result.skipped:
+        print(f"  ~ skipped (issue already open): {title}")
+    for err in result.errors:
+        print(f"  error: {err}", file=sys.stderr)
+
+    if not (result.created or result.skipped or result.errors):
         print("No tasks with status todo/doing to push.")
         return 0
 
-    owner, _, repo = args.repo.partition("/")
-    if not owner or not repo:
-        print("error: --repo must be in owner/repo format", file=sys.stderr)
-        return 1
-
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Accept": "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28",
-        "Content-Type": "application/json",
-    }
-
-    created = 0
-    errors = 0
-    for task in to_push:
-        body_parts = [f"Task `{task.id}` from Monolith task tree."]
-        if task.deps:
-            body_parts.append(f"\nDepends on: {', '.join(task.deps)}")
-        body_parts.append(f"\nStatus: `{task.status}`")
-        if args.spec_link:
-            body_parts.append(f"\nSpec: {args.spec_link}")
-
-        payload: dict = {
-            "title": task.title,
-            "body": "\n".join(body_parts),
-        }
-        if args.label:
-            payload["labels"] = [args.label]
-
-        data = json.dumps(payload).encode()
-        req = urllib.request.Request(
-            f"https://api.github.com/repos/{owner}/{repo}/issues",
-            data=data,
-            headers=headers,
-            method="POST",
-        )
-        try:
-            with urllib.request.urlopen(req) as resp:
-                result = json.loads(resp.read())
-            print(f"  + #{result['number']}  {task.id}: {task.title}")
-            print(f"    {result['html_url']}")
-            created += 1
-        except urllib.error.HTTPError as exc:
-            detail = exc.read().decode(errors="replace")
-            print(f"  error: {task.id} — HTTP {exc.code}: {detail}", file=sys.stderr)
-            errors += 1
-
-    print(f"\n{created} issue(s) created", end="")
-    if errors:
-        print(f", {errors} error(s)", end="")
+    print(
+        f"\n{len(result.created)} issue(s) created, "
+        f"{len(result.skipped)} skipped",
+        end="",
+    )
+    if result.errors:
+        print(f", {len(result.errors)} error(s)", end="")
     print(".")
-    return 1 if errors else 0
+    return 0 if result.ok else 1
 
 
 def cmd_mcp(args: argparse.Namespace) -> int:

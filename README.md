@@ -192,7 +192,7 @@ monolith run -- git status       # drops hint noise
 | `monolith plan <prd-file> [--force]` | Parse a PRD/Markdown file into a task tree; writes `TASKS.md`. |
 | `monolith tasks [--emit]` | List the task tree; `--emit` re-writes `TASKS.md`. |
 | `monolith task <id> --status todo\|doing\|done` | Update a task's status (warns on unmet dependencies). |
-| `monolith tasks-to-issues --repo owner/repo` | Push todo/doing tasks to GitHub Issues (requires `GITHUB_TOKEN`). |
+| `monolith tasks-to-issues --repo owner/repo` | Push todo/doing tasks to GitHub Issues (requires `GITHUB_TOKEN`). Idempotent — titles already open as issues are skipped, so re-running creates no duplicates. |
 
 ### Resource hub & runtime
 
@@ -313,6 +313,7 @@ exist, creates the tag `vX.Y.Z` and a GitHub release. Bump `version` in
 
 ```bash
 python -m unittest discover -s tests -v   # run the tests locally
+monolith run -- python -m unittest discover -s tests   # same, dogfooding the output compressor
 ```
 
 ## ☕ Support

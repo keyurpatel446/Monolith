@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 from monolith.adapters import register
 from monolith.adapters.compiler import Compiler
 
@@ -11,6 +13,7 @@ class ClaudeCodeCompiler(Compiler):
     key = "claude"
     label = "Claude Code"
     target_path = "CLAUDE.md"
+    command_dir = os.path.join(".claude", "commands")
 
     def preamble(self) -> str:
         return (

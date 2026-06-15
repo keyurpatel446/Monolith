@@ -46,6 +46,18 @@ class Compiler:
     label: str = ""
     #: path, relative to the project root, of the agent's instruction file
     target_path: str = ""
+    #: directory (relative to root) where ``monolith hub`` installs commands
+    command_dir: str = ""
+    #: file extension for installed command/prompt assets
+    command_ext: str = "md"
+
+    def hub_path(self, name: str) -> str:
+        """Install path (relative to root) for hub asset ``name``.
+
+        Defined here so the agent roster lives in one place — the registry —
+        instead of being duplicated in a separate table in ``hub.py``.
+        """
+        return os.path.join(self.command_dir, f"{name}.{self.command_ext}")
 
     # -- content rendering --------------------------------------------------
 

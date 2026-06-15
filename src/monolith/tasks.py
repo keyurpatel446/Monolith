@@ -71,7 +71,7 @@ class Task:
 
 # -- PRD parsing ---------------------------------------------------------
 
-def _extract_tags(text: str) -> Tuple[str, str | None, List[str]]:
+def extract_tags(text: str) -> Tuple[str, str | None, List[str]]:
     """Pull ``{#name}`` and ``@after:`` tags out of ``text``.
 
     Returns ``(clean_title, name_or_None, after_names)``.
@@ -128,7 +128,7 @@ def parse_prd(text: str) -> List[Task]:
             level = heading_level + 1 + (indent // _INDENT_UNIT)
             title_src = item.group(2)
 
-        title, name, after = _extract_tags(title_src)
+        title, name, after = extract_tags(title_src)
         counter += 1
         task_id = f"T{counter}"
 
@@ -175,12 +175,20 @@ def save_tasks(tasks: Sequence[Task], root: str = ".") -> str:
 
 
 def load_tasks(root: str = ".") -> List[Task]:
-    """Load tasks from the store (empty list if none saved)."""
+    """Load tasks from the store (empty list if none saved).
+
+    A corrupt store raises ``ValueError`` rather than returning ``[]``: silently
+    treating it as empty would let the next ``save_tasks`` clobber recoverable
+    data. Settings, by contrast, fall back to defaults because they regenerate.
+    """
     path = tasks_path(root)
     if not os.path.exists(path):
         return []
-    with open(path, "r", encoding="utf-8") as handle:
-        return [Task.from_dict(d) for d in json.load(handle)]
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            return [Task.from_dict(d) for d in json.load(handle)]
+    except (json.JSONDecodeError, OSError) as exc:
+        raise ValueError(f"corrupt task store at {path}: {exc}") from exc
 
 
 # -- mutation ------------------------------------------------------------

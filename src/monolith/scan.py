@@ -22,8 +22,8 @@ from typing import List, Tuple
 from monolith.settings import extra_rules, load_settings, save_settings
 from monolith.tasks import (
     Task,
-    _extract_tags,
     emit_tasks_md,
+    extract_tags,
     load_tasks,
     save_tasks,
 )
@@ -121,7 +121,7 @@ def apply_found(found: Found, root: str = ".") -> Tuple[List[str], List[str]]:
         pending: List[Tuple[str, List[str]]] = []  # (task_id, dep_slugs)
 
         for raw in found.tasks:
-            title, slug, after = _extract_tags(raw)
+            title, slug, after = extract_tags(raw)
             if not title or title in existing_titles:
                 continue
             task_id = f"T{next_n}"
