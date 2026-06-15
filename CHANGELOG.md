@@ -6,6 +6,11 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-06-15
+
+Re-release of 1.0.1 to publish to PyPI after the project's Trusted Publisher
+configuration was corrected. No functional code changes from 1.0.1.
+
 ## [1.0.1] - 2026-06-15
 
 ### Changed
