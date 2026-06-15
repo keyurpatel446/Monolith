@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format is based on
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-06-15
+
 ### Changed
 - `monolith tasks-to-issues` is now idempotent: it skips tasks whose title
   already exists as an open issue, so re-running no longer creates duplicates.
